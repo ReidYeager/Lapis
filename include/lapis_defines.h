@@ -16,6 +16,19 @@ typedef enum LapisResult
 } LapisResult;
 
 // =====
+// Console
+// =====
+
+typedef enum LapisConsolePrintType
+{
+  Lapis_Console_Debug,
+  Lapis_Console_Info,
+  Lapis_Console_Warning,
+  Lapis_Console_Error,
+  Lapis_Console_Fatal
+} LapisConsolePrintType;
+
+// =====
 // Window
 // =====
 

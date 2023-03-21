@@ -25,7 +25,8 @@ add_library (Lapis STATIC
 if (LAPIS_TARGET_PLATFORM STREQUAL "WIN32")
   target_sources (Lapis PRIVATE
     "src/window_win32.c"
-  )
+    "src/memory_win32.c"
+   "src/console_win32.c")
 
   target_compile_definitions(Lapis PUBLIC
     LAPIS_PLATFORM_WIN32
@@ -48,6 +49,5 @@ endif()
 set_target_properties(Lapis PROPERTIES LINKER_LANGUAGE C)
 
 target_include_directories (Lapis PUBLIC
-  ./include/
-  ./src/
+  ./
 )

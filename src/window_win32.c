@@ -1,7 +1,8 @@
 
-#include "defines.h"
+#include "src/defines.h"
 
 #include <stdio.h>
+#include <string.h>
 
 const char* windowClassName = "LapisWindowClass";
 
@@ -36,11 +37,11 @@ int RegisterWindow(LapisWindow_T* _window)
   wc.cbClsExtra = 0;
   wc.cbWndExtra = 0;
   wc.hInstance = _window->platform.hinstance;
-  wc.hIcon = LoadIcon(_window->platform.hinstance, IDI_APPLICATION);;
+  wc.hIcon = LoadIcon(_window->platform.hinstance, IDI_APPLICATION);
   wc.hCursor = LoadCursor(NULL, IDC_ARROW);
   wc.hbrBackground = NULL;
   wc.lpszClassName = windowClassName;
-  wc.lpszMenuName = (void*)0;
+  wc.lpszMenuName = NULL;
 
   int x = RegisterClassA(&wc);
 
@@ -85,19 +86,18 @@ int CreateAndShowWindow(LapisCreateWindowInfo _info, LapisWindow_T* _window)
 
 LapisResult LapisCreateWindow(LapisCreateWindowInfo _info, LapisWindow* _outWindow)
 {
-  *_outWindow = (LapisWindow_T*)malloc(sizeof(LapisWindow_T));
-  *_outWindow = (LapisWindow_T*)memset(*_outWindow, 0, sizeof(LapisWindow_T));
-  LapisWindow_T* window = *_outWindow;
+  LapisWindow_T* newWindow = (LapisWindow_T*)LapisMemAllocZero(sizeof(LapisWindow_T));
 
-  if (RegisterWindow(window))
+  if (RegisterWindow(newWindow))
   {
     return Lapis_Window_Creation_Failed; // TODO : Replace with custom fatal error/bail
   }
 
-  if (CreateAndShowWindow(_info, window))
+  if (CreateAndShowWindow(_info, newWindow))
   {
     return Lapis_Window_Creation_Failed; // TODO : Replace with custom fatal error/bail
   }
 
+  *_outWindow = newWindow;
   return Lapis_Success;
 }

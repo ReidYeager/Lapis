@@ -2,7 +2,7 @@
 #ifndef GEM_LAPIS_DEFINES_H_PRIVATE
 #define GEM_LAPIS_DEFINES_H_PRIVATE
 
-#include "lapis.h"
+#include "include/lapis.h"
 
 #include <stdint.h>
 
