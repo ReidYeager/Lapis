@@ -6,6 +6,17 @@
 
 #include <stdint.h>
 
+#define LAPIS_ATTEMPT(fn, failureAction) \
+{                                        \
+  LapisResult attemptResult = (fn);      \
+  if (attemptResult != Lapis_Success)    \
+  {                                      \
+    failureAction;                       \
+  }                                      \
+}
+
+#define LAPIS_LOG(type, msg, ...) LapisConsolePrintMessage(type, "Lapis :: " msg, __VA_ARGS__)
+
 // =====
 // Window
 // =====

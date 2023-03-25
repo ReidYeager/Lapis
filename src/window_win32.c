@@ -3,6 +3,8 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <windows.h>
+#include <windowsx.h>
 
 const char* windowClassName = "LapisWindowClass";
 
@@ -26,7 +28,7 @@ LRESULT CALLBACK ProcessInputMessage(HWND _hwnd, uint32_t _message, WPARAM _wpar
   return result;
 }
 
-int RegisterWindow(LapisWindow_T* _window)
+LapisResult RegisterWindow(LapisWindow_T* _window)
 {
   _window->platform.hinstance = GetModuleHandleA(0);
 
@@ -47,14 +49,14 @@ int RegisterWindow(LapisWindow_T* _window)
 
   if (x == 0)
   {
-    printf("Failed to register window\n"); // TODO : Replace with custom fatal error/bail
-    return -1;
+    LAPIS_LOG(Lapis_Console_Error, "Failed to register window\n");
+    return Lapis_Window_Creation_Failed;
   }
 
-  return 0;
+  return Lapis_Success;
 }
 
-int CreateAndShowWindow(LapisCreateWindowInfo _info, LapisWindow_T* _window)
+LapisResult CreateAndShowWindow(LapisCreateWindowInfo _info, LapisWindow_T* _window)
 {
   uint32_t windowStyle = WS_OVERLAPPEDWINDOW; //WS_OVERLAPPED | WS_SYSMENU | WS_CAPTION
   uint32_t windowExStyle = WS_EX_APPWINDOW;
@@ -64,8 +66,8 @@ int CreateAndShowWindow(LapisCreateWindowInfo _info, LapisWindow_T* _window)
     windowClassName,
     _info.title,
     windowStyle,
-    _info.xPos, // Xpos
-    _info.yPos, // Ypos
+    _info.xPos, // X screen position
+    _info.yPos, // Y screen position
     _info.width, // Extent X
     _info.height, // Extent Y
     0,
@@ -75,29 +77,82 @@ int CreateAndShowWindow(LapisCreateWindowInfo _info, LapisWindow_T* _window)
 
   if (_window->platform.hwnd == 0)
   {
-    printf("Failed to create window\n"); // TODO : Replace with custom fatal error/bail
-    return -1;
+    LAPIS_LOG(Lapis_Console_Error, "Failed to create window\n");
+    return Lapis_Window_Creation_Failed;
   }
 
   ShowWindow(_window->platform.hwnd, SW_SHOW);
 
-  return 0;
+  return Lapis_Success;
 }
 
 LapisResult LapisCreateWindow(LapisCreateWindowInfo _info, LapisWindow* _outWindow)
 {
   LapisWindow_T* newWindow = (LapisWindow_T*)LapisMemAllocZero(sizeof(LapisWindow_T));
 
-  if (RegisterWindow(newWindow))
-  {
-    return Lapis_Window_Creation_Failed; // TODO : Replace with custom fatal error/bail
-  }
-
-  if (CreateAndShowWindow(_info, newWindow))
-  {
-    return Lapis_Window_Creation_Failed; // TODO : Replace with custom fatal error/bail
-  }
+  LAPIS_ATTEMPT(RegisterWindow(newWindow), return Lapis_Window_Creation_Failed);
+  LAPIS_ATTEMPT(CreateAndShowWindow(_info, newWindow), return Lapis_Window_Creation_Failed);
 
   *_outWindow = newWindow;
   return Lapis_Success;
 }
+
+void LapisDestroyWindow(LapisWindow* _window)
+{
+  LapisMemFree(_window);
+  *_window = NULL;
+}
+
+// =====
+// Graphics APIs
+// =====
+
+// Vulkan =====
+#if (LAPIS_VULKAN)
+
+#include <vulkan/vulkan.h>
+#include <vulkan/vulkan_win32.h>
+
+void LapisWindowVulkanGetRequiredExtensions(uint32_t* _extensionCount, const char** _extensionNames)
+{
+  if (_extensionCount != NULL)
+  {
+    *_extensionCount = 1;
+  }
+
+  if (_extensionNames != NULL)
+  {
+    _extensionNames[0] = VK_KHR_WIN32_SURFACE_EXTENSION_NAME;
+  }
+}
+
+LapisResult LapisWindowVulkanCreateSurface(
+  LapisWindow _window,
+  VkInstance _instance,
+  VkSurfaceKHR* _surface)
+{
+  VkWin32SurfaceCreateInfoKHR createInfo = {0};
+  createInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
+  createInfo.pNext = NULL;
+  createInfo.flags = 0;
+  createInfo.hinstance = _window->platform.hinstance;
+  createInfo.hwnd = _window->platform.hwnd;
+
+  VkResult result = vkCreateWin32SurfaceKHR(
+    _instance,
+    &createInfo,
+    NULL,
+    _surface);
+
+  if (result != VK_SUCCESS)
+  {
+    LapisConsolePrintMessage(
+      Lapis_Console_Error,
+      "Lapis :: Failed to create vulkan window surface\n");
+    return Lapis_Window_Component_Failed;
+  }
+
+  return Lapis_Success;
+}
+
+#endif // LAPIS_VULKAN

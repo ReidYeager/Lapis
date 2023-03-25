@@ -12,6 +12,7 @@ typedef enum LapisResult
 {
   Lapis_Success,
   Lapis_Window_Creation_Failed,
+  Lapis_Window_Component_Failed,
   Lapis_Unknown
 } LapisResult;
 
