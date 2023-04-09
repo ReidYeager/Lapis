@@ -6,7 +6,8 @@
 #include <windows.h>
 #include <windowsx.h>
 
-const char* windowClassName = "LapisWindowClass";
+char windowClassNameBuffer[32];
+LapisWindow activeWindow = NULL;
 
 LRESULT CALLBACK ProcessInputMessage(HWND _hwnd, uint32_t _message, WPARAM _wparam, LPARAM _lparam)
 {
@@ -17,6 +18,7 @@ LRESULT CALLBACK ProcessInputMessage(HWND _hwnd, uint32_t _message, WPARAM _wpar
   case WM_CLOSE:
   case WM_QUIT:
   {
+    activeWindow->shouldClose = 1;
     break;
   }
   default:
@@ -26,6 +28,12 @@ LRESULT CALLBACK ProcessInputMessage(HWND _hwnd, uint32_t _message, WPARAM _wpar
   }
 
   return result;
+}
+
+const char* ConstructWindowClassName(LapisWindow_T* _window)
+{
+  sprintf(windowClassNameBuffer, "LapisWindowClass_%p", _window);
+  return windowClassNameBuffer;
 }
 
 LapisResult RegisterWindow(LapisWindow_T* _window)
@@ -42,7 +50,7 @@ LapisResult RegisterWindow(LapisWindow_T* _window)
   wc.hIcon = LoadIcon(_window->platform.hinstance, IDI_APPLICATION);
   wc.hCursor = LoadCursor(NULL, IDC_ARROW);
   wc.hbrBackground = NULL;
-  wc.lpszClassName = windowClassName;
+  wc.lpszClassName = ConstructWindowClassName(_window);
   wc.lpszMenuName = NULL;
 
   int x = RegisterClassA(&wc);
@@ -63,7 +71,7 @@ LapisResult CreateAndShowWindow(LapisCreateWindowInfo _info, LapisWindow_T* _win
 
   _window->platform.hwnd = CreateWindowExA(
     windowExStyle,
-    windowClassName,
+    ConstructWindowClassName(_window),
     _info.title,
     windowStyle,
     _info.xPos, // X screen position
@@ -99,9 +107,47 @@ LapisResult LapisCreateWindow(LapisCreateWindowInfo _info, LapisWindow* _outWind
 
 void LapisDestroyWindow(LapisWindow* _window)
 {
-  LapisMemFree(_window);
+  LapisWindow_T* window = *_window;
+  DestroyWindow(window->platform.hwnd);
+  LapisMemFree(window);
   *_window = NULL;
 }
+
+LapisResult LapisWindowProcessOsEvents(LapisWindow _window)
+{
+  activeWindow = _window;
+
+  MSG message;
+  // TODO : Split window message processing into OS and input messages
+  // Win32 has the option to only handle kbm messages
+  // https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-peekmessagea
+  // Can handle input messages without needing to use "Translate/Dispatch Message"?
+  // https://learn.microsoft.com/en-us/windows/win32/winmsg/using-messages-and-message-queues#examining-a-message-queue
+  while (PeekMessageA(&message, _window->platform.hwnd, 0, 0, PM_REMOVE))
+  {
+    TranslateMessage(&message);
+    DispatchMessage(&message);
+  }
+
+  activeWindow = NULL;
+  return Lapis_Success;
+}
+
+uint32_t LapisWindowGetWidth(LapisWindow _window)
+{
+  return _window->width;
+}
+
+uint32_t LapisWindowGetHeight(LapisWindow _window)
+{
+  return _window->height;
+}
+
+uint8_t LapisWindowGetShouldClose(LapisWindow _window)
+{
+  return _window->shouldClose;
+}
+
 
 // =====
 // Graphics APIs

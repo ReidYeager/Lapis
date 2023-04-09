@@ -36,6 +36,10 @@ void LapisMemFree(void* _data);
 
 LapisResult LapisCreateWindow(LapisCreateWindowInfo _info, LapisWindow* _outWindow);
 void LapisDestroyWindow(LapisWindow* _window);
+LapisResult LapisWindowProcessOsEvents(LapisWindow _window);
+uint32_t LapisWindowGetWidth(LapisWindow _window);
+uint32_t LapisWindowGetHeight(LapisWindow _window);
+uint8_t LapisWindowGetShouldClose(LapisWindow _window);
 
 // Vulkan =====
 #if (LAPIS_VULKAN)
