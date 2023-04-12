@@ -14,11 +14,16 @@ extern "C" {
 // =====
 
 void LapisConsolePrintMessage(LapisConsolePrintType _type, const char* _message, ...);
-#define LapisLog(msg, ...) LapisConsolePrintMessage(Lapis_Console_Info, msg, __VA_ARGS__)
-#define LapisLogDebug(msg, ...) LapisConsolePrintMessage(Lapis_Console_Debug, msg, __VA_ARGS__)
-#define LapisLogWarning(msg, ...) LapisConsolePrintMessage(Lapis_Console_Warning, msg, __VA_ARGS__)
-#define LapisLogError(msg, ...) LapisConsolePrintMessage(Lapis_Console_Error, msg, __VA_ARGS__)
-#define LapisLogFatal(msg, ...) LapisConsolePrintMessage(Lapis_Console_Fatal, msg, __VA_ARGS__)
+#define LapisLog(msg, ...) \
+  LapisConsolePrintMessage(Lapis_Console_Info, "Lapis :: " msg, __VA_ARGS__)
+#define LapisLogDebug(msg, ...) \
+  LapisConsolePrintMessage(Lapis_Console_Debug, "Lapis :: " msg, __VA_ARGS__)
+#define LapisLogWarning(msg, ...) \
+  LapisConsolePrintMessage(Lapis_Console_Warning, "Lapis :: " msg, __VA_ARGS__)
+#define LapisLogError(msg, ...) \
+  LapisConsolePrintMessage(Lapis_Console_Error, "Lapis :: " msg, __VA_ARGS__)
+#define LapisLogFatal(msg, ...) \
+  LapisConsolePrintMessage(Lapis_Console_Fatal, "Lapis :: " msg, __VA_ARGS__)
 
 // =====
 // Memory
@@ -26,9 +31,16 @@ void LapisConsolePrintMessage(LapisConsolePrintType _type, const char* _message,
 
 void* LapisMemAlloc(uint64_t _size);
 void* LapisMemAllocZero(uint64_t _size);
+void* LapisMemRealloc(void* _data, uint64_t _size);
 void LapisMemSet(void* _data, uint32_t _value, uint64_t _size);
 void LapisMemCopy(void* _src, void* _dst, uint64_t _size);
 void LapisMemFree(void* _data);
+
+// =====
+// File system
+// =====
+
+uint64_t LapisFileRead(const char* _file, char** _pData);
 
 // =====
 // Window

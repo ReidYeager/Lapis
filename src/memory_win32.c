@@ -15,6 +15,11 @@ void* LapisMemAllocZero(uint64_t _size)
   return data;
 }
 
+void* LapisMemRealloc(void* _data, uint64_t _size)
+{
+  return realloc(_data, _size);
+}
+
 void LapisMemSet(void* _data, uint32_t _value, uint64_t _size)
 {
   memset(_data, _value, _size);
