@@ -7,8 +7,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_library (Lapis STATIC
   "include/lapis.h"
   "include/lapis_defines.h"
+
   "src/defines.h"
-)
+  "src/common.h"
+ "src/input.c")
 
 ## =====
 # Platforms
@@ -29,7 +31,8 @@ if (LAPIS_TARGET_PLATFORM STREQUAL "WIN32")
     "src/window_win32.c"
     "src/memory_win32.c"
     "src/console_win32.c"
-    "src/files_win32.c")
+    "src/files_win32.c"
+  )
 
   target_compile_definitions(Lapis PUBLIC LAPIS_PLATFORM_WIN32)
 endif()
@@ -44,7 +47,9 @@ if (LAPIS_TARGET_PLATFORM STREQUAL "LINUX_DESKTOP")
   target_compile_definitions(Lapis PUBLIC LAPIS_PLATFORM_LINUX_DT)
 endif()
 
-target_include_directories (Lapis PUBLIC ./)
+target_include_directories (Lapis PUBLIC
+  ./
+)
 
 ## =====
 # Graphics Apis

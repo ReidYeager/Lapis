@@ -6,12 +6,13 @@
 #include <windows.h>
 #include <windowsx.h>
 
-char windowClassNameBuffer[32];
+char windowClassNameBuffer[64];
 LapisWindow activeWindow = NULL;
 
 LRESULT CALLBACK ProcessInputMessage(HWND _hwnd, uint32_t _message, WPARAM _wparam, LPARAM _lparam)
 {
   LRESULT result = 0;
+  PlatformInputData processedKey = { 0 };
 
   switch (_message)
   {
@@ -21,6 +22,22 @@ LRESULT CALLBACK ProcessInputMessage(HWND _hwnd, uint32_t _message, WPARAM _wpar
     activeWindow->shouldClose = 1;
     break;
   }
+  case WM_KEYDOWN:
+  case WM_SYSKEYDOWN:
+  {
+    processedKey.isPressed = 1;
+    processedKey.mods = 0;
+    processedKey.value = 0.0f;
+    InputProcessKeyInput(activeWindow, LapisPlatformKeycodeMap[_wparam], processedKey);
+  } break;
+  case WM_KEYUP:
+  case WM_SYSKEYUP:
+  {
+    processedKey.isPressed = 0;
+    processedKey.mods = 0;
+    processedKey.value = 0.0f;
+    InputProcessKeyInput(activeWindow, LapisPlatformKeycodeMap[_wparam], processedKey);
+  } break;
   default:
   {
     result = DefWindowProcA(_hwnd, _message, _wparam, _lparam);
@@ -32,7 +49,7 @@ LRESULT CALLBACK ProcessInputMessage(HWND _hwnd, uint32_t _message, WPARAM _wpar
 
 const char* ConstructWindowClassName(LapisWindow_T* _window)
 {
-  sprintf(windowClassNameBuffer, "LapisWindowClass_%p", _window);
+  sprintf_s(windowClassNameBuffer, 64, "LapisWindowClass_%p", _window);
   return windowClassNameBuffer;
 }
 
@@ -117,6 +134,9 @@ LapisResult LapisWindowProcessOsEvents(LapisWindow _window)
 {
   activeWindow = _window;
 
+  activeWindow->previousInputState = activeWindow->currentInputState;
+  LapisMemSet(&activeWindow->currentInputState, 0, sizeof(LapisInputState));
+
   MSG message;
   // TODO : Split window message processing into OS and input messages
   // Win32 has the option to only handle kbm messages
@@ -163,12 +183,13 @@ void LapisWindowVulkanGetRequiredExtensions(uint32_t* _extensionCount, const cha
 {
   if (_extensionCount != NULL)
   {
-    *_extensionCount = 1;
+    *_extensionCount = 2;
   }
 
   if (_extensionNames != NULL)
   {
     _extensionNames[0] = VK_KHR_WIN32_SURFACE_EXTENSION_NAME;
+    _extensionNames[1] = VK_KHR_SURFACE_EXTENSION_NAME;
   }
 }
 
@@ -192,9 +213,7 @@ LapisResult LapisWindowVulkanCreateSurface(
 
   if (result != VK_SUCCESS)
   {
-    LapisConsolePrintMessage(
-      Lapis_Console_Error,
-      "Lapis :: Failed to create vulkan window surface\n");
+    LapisLogError("Failed to create vulkan window surface\n");
     return Lapis_Window_Component_Failed;
   }
 
