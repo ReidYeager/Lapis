@@ -1,5 +1,6 @@
 
 #include "src/defines.h"
+#include "src/common.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -12,7 +13,7 @@ LapisWindow activeWindow = NULL;
 LRESULT CALLBACK ProcessInputMessage(HWND _hwnd, uint32_t _message, WPARAM _wparam, LPARAM _lparam)
 {
   LRESULT result = 0;
-  PlatformInputData processedKey = { 0 };
+  PlatformInputData keyData = { 0 };
 
   switch (_message)
   {
@@ -25,18 +26,18 @@ LRESULT CALLBACK ProcessInputMessage(HWND _hwnd, uint32_t _message, WPARAM _wpar
   case WM_KEYDOWN:
   case WM_SYSKEYDOWN:
   {
-    processedKey.isPressed = 1;
-    processedKey.mods = 0;
-    processedKey.value = 0.0f;
-    InputProcessKeyInput(activeWindow, LapisPlatformKeycodeMap[_wparam], processedKey);
+    keyData.isPressed = 1;
+    keyData.mods = 0;
+    keyData.value = 0.0f;
+    InputProcessKeyInput(activeWindow, LapisPlatformKeycodeMap[_wparam], keyData);
   } break;
   case WM_KEYUP:
   case WM_SYSKEYUP:
   {
-    processedKey.isPressed = 0;
-    processedKey.mods = 0;
-    processedKey.value = 0.0f;
-    InputProcessKeyInput(activeWindow, LapisPlatformKeycodeMap[_wparam], processedKey);
+    keyData.isPressed = 0;
+    keyData.mods = 0;
+    keyData.value = 0.0f;
+    InputProcessKeyInput(activeWindow, LapisPlatformKeycodeMap[_wparam], keyData);
   } break;
   default:
   {
@@ -130,12 +131,16 @@ void LapisDestroyWindow(LapisWindow* _window)
   *_window = NULL;
 }
 
+void LapisWindowMarkForClosure(LapisWindow _window)
+{
+  _window->shouldClose = 1;
+}
+
 LapisResult LapisWindowProcessOsEvents(LapisWindow _window)
 {
   activeWindow = _window;
 
   activeWindow->previousInputState = activeWindow->currentInputState;
-  LapisMemSet(&activeWindow->currentInputState, 0, sizeof(LapisInputState));
 
   MSG message;
   // TODO : Split window message processing into OS and input messages

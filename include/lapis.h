@@ -48,6 +48,7 @@ uint64_t LapisFileRead(const char* _file, char** _pData);
 
 LapisResult LapisCreateWindow(LapisCreateWindowInfo _info, LapisWindow* _outWindow);
 void LapisDestroyWindow(LapisWindow* _window);
+void LapisWindowMarkForClosure(LapisWindow _window);
 LapisResult LapisWindowProcessOsEvents(LapisWindow _window);
 uint32_t LapisWindowGetWidth(LapisWindow _window);
 uint32_t LapisWindowGetHeight(LapisWindow _window);
@@ -68,6 +69,13 @@ LapisResult LapisWindowVulkanCreateSurface(
   void LapisWindowVulkanGetRequiredExtensions() {}
   void LapisWindowVulkanCreateSurface() {}
 #endif // LAPIS_VULKAN
+
+// =====
+// Input
+// =====
+uint8_t LapisInputGetInput(LapisWindow _window, LapisInputCode _code);
+uint8_t LapisInputGetInputPressed(LapisWindow _window, LapisInputCode _code);
+uint8_t LapisInputGetInputReleased(LapisWindow _window, LapisInputCode _code);
 
 
 #ifdef __cplusplus
