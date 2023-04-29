@@ -74,8 +74,8 @@ LapisResult LapisWindowVulkanCreateSurface(
 // Input
 // =====
 uint8_t LapisInputGetInput(LapisWindow _window, LapisInputCode _code);
-uint8_t LapisInputGetInputPressed(LapisWindow _window, LapisInputCode _code);
-uint8_t LapisInputGetInputReleased(LapisWindow _window, LapisInputCode _code);
+uint8_t LapisInputGetInputWasPressed(LapisWindow _window, LapisInputCode _code);
+uint8_t LapisInputGetInputWasReleased(LapisWindow _window, LapisInputCode _code);
 
 
 #ifdef __cplusplus
