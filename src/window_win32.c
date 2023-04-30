@@ -13,7 +13,7 @@ LapisWindow activeWindow = NULL;
 LRESULT CALLBACK ProcessInputMessage(HWND _hwnd, uint32_t _message, WPARAM _wparam, LPARAM _lparam)
 {
   LRESULT result = 0;
-  PlatformInputData keyData = { 0 };
+  PlatformInputData inputData = { 0 };
 
   switch (_message)
   {
@@ -21,28 +21,69 @@ LRESULT CALLBACK ProcessInputMessage(HWND _hwnd, uint32_t _message, WPARAM _wpar
   case WM_QUIT:
   {
     activeWindow->shouldClose = 1;
-    break;
-  }
+  } break;
   case WM_KEYDOWN:
   case WM_SYSKEYDOWN:
   {
-    keyData.isPressed = 1;
-    keyData.mods = 0;
-    keyData.value = 0.0f;
-    InputProcessKeyInput(activeWindow, LapisPlatformKeycodeMap[_wparam], keyData);
+    inputData.valueUint = 1;
+    InputProcessButtonInput(activeWindow, LapisPlatformKeycodeMap[_wparam], inputData);
   } break;
   case WM_KEYUP:
   case WM_SYSKEYUP:
   {
-    keyData.isPressed = 0;
-    keyData.mods = 0;
-    keyData.value = 0.0f;
-    InputProcessKeyInput(activeWindow, LapisPlatformKeycodeMap[_wparam], keyData);
+    inputData.valueUint = 0;
+    InputProcessButtonInput(activeWindow, LapisPlatformKeycodeMap[_wparam], inputData);
+  } break;
+  case WM_INPUT:
+  {
+    GET_RAWINPUT_CODE_WPARAM(_wparam);
+    if (_wparam != RIM_INPUT)
+      break;
+
+    UINT size = sizeof(RAWINPUT);
+    uint32_t data[sizeof(RAWINPUT)];
+    GetRawInputData((HRAWINPUT)_lparam, RID_INPUT, data, &size, sizeof(RAWINPUTHEADER));
+
+    RAWINPUT* raw = (RAWINPUT*)data;
+
+    if (raw->header.dwType == RIM_TYPEMOUSE)
+    {
+      inputData.valueFloat = raw->data.mouse.lLastX;
+      InputProcessAxisInput(activeWindow, Lapis_Input_Mouse_Delta_X, inputData);
+      inputData.valueFloat = raw->data.mouse.lLastY;
+      InputProcessAxisInput(activeWindow, Lapis_Input_Mouse_Delta_Y, inputData);
+
+      LapisInputButtonCode mouseButtonCode = Lapis_Input_Button_Unkown;
+
+      uint32_t buttons = (uint32_t)raw->data.mouse.ulButtons;
+      uint32_t index = 0;
+      while (buttons != 0)
+      {
+        if (buttons & 3)
+        {
+          switch (index)
+          {
+          case 0: mouseButtonCode = Lapis_Input_Mouse_Button_Left; break;
+          case 1: mouseButtonCode = Lapis_Input_Mouse_Button_Right; break;
+          case 2: mouseButtonCode = Lapis_Input_Mouse_Button_Middle; break;
+          case 3: mouseButtonCode = Lapis_Input_Mouse_Button_4; break;
+          case 4: mouseButtonCode = Lapis_Input_Mouse_Button_5; break;
+          default: break;
+          }
+
+          inputData.valueUint = (buttons & 1);
+          InputProcessButtonInput(activeWindow, mouseButtonCode, inputData);
+        }
+        buttons = buttons >> 2;
+        index++;
+      }
+    }
+
   } break;
   default:
   {
     result = DefWindowProcA(_hwnd, _message, _wparam, _lparam);
-  }
+  } break;
   }
 
   return result;
@@ -82,6 +123,28 @@ LapisResult RegisterWindow(LapisWindow_T* _window)
   return Lapis_Success;
 }
 
+LapisResult RegisterInputs(LapisWindow_T* _window)
+{
+#ifndef HID_USAGE_PAGE_GENERIC
+#define HID_USAGE_PAGE_GENERIC ((USHORT) 0x01)
+#endif
+#ifndef HID_USAGE_GENERIC_MOUSE
+#define HID_USAGE_GENERIC_MOUSE ((USHORT) 0x02)
+#endif
+
+  RAWINPUTDEVICE inputDevice;
+  inputDevice.usUsagePage = HID_USAGE_PAGE_GENERIC;
+  inputDevice.usUsage = HID_USAGE_GENERIC_MOUSE;
+  inputDevice.dwFlags = RIDEV_INPUTSINK;
+  inputDevice.hwndTarget = _window->platform.hwnd;
+  if (!RegisterRawInputDevices(&inputDevice, 1, sizeof(inputDevice)))
+  {
+    return Lapis_Window_Component_Failed;
+  }
+
+  return Lapis_Success;
+}
+
 LapisResult CreateAndShowWindow(LapisCreateWindowInfo _info, LapisWindow_T* _window)
 {
   uint32_t windowStyle = WS_OVERLAPPEDWINDOW; //WS_OVERLAPPED | WS_SYSMENU | WS_CAPTION
@@ -106,6 +169,8 @@ LapisResult CreateAndShowWindow(LapisCreateWindowInfo _info, LapisWindow_T* _win
     LAPIS_LOG(Lapis_Console_Error, "Failed to create window\n");
     return Lapis_Window_Creation_Failed;
   }
+
+  LAPIS_ATTEMPT(RegisterInputs(_window), return Lapis_Window_Creation_Failed);
 
   ShowWindow(_window->platform.hwnd, SW_SHOW);
 
@@ -141,6 +206,10 @@ LapisResult LapisWindowProcessOsEvents(LapisWindow _window)
   activeWindow = _window;
 
   activeWindow->previousInputState = activeWindow->currentInputState;
+  LapisMemSet(
+    activeWindow->currentInputState.axises,
+    0,
+    sizeof(activeWindow->currentInputState.axises));
 
   MSG message;
   // TODO : Split window message processing into OS and input messages

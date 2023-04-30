@@ -1,26 +1,53 @@
 
 #include "src/defines.h"
 
-void InputProcessKeyInput(LapisWindow _window, LapisInputCode _code, PlatformInputData _data)
+// =====
+// Buttons
+// =====
+
+void InputProcessButtonInput(
+  LapisWindow _window,
+  LapisInputButtonCode _code,
+  PlatformInputData _data)
 {
-  _window->currentInputState.keys[_code] = _data.isPressed;
+  _window->currentInputState.buttons[_code] = _data.valueUint;
 }
 
-uint8_t LapisInputGetInput(LapisWindow _window, LapisInputCode _code)
+uint8_t LapisInputGetButton(LapisWindow _window, LapisInputButtonCode _code)
 {
-  return (_window->currentInputState.keys[_code] != 0);
+  return ( _window->currentInputState.buttons[_code] != 0 );
 }
 
-uint8_t LapisInputGetInputWasPressed(LapisWindow _window, LapisInputCode _code)
+uint8_t LapisInputGetButtonWasPressed(LapisWindow _window, LapisInputButtonCode _code)
 {
   return
-    (_window->currentInputState.keys[_code] == 1)
-    && ( _window->previousInputState.keys[_code] == 0 );
+    ( _window->currentInputState.buttons[_code] == 1 )
+    && ( _window->previousInputState.buttons[_code] == 0 );
 }
 
-uint8_t LapisInputGetInputWasReleased(LapisWindow _window, LapisInputCode _code)
+uint8_t LapisInputGetButtonWasReleased(LapisWindow _window, LapisInputButtonCode _code)
 {
   return
-    ( _window->currentInputState.keys[_code] == 0 )
-    && ( _window->previousInputState.keys[_code] == 1 );
+    ( _window->currentInputState.buttons[_code] == 0 )
+    && ( _window->previousInputState.buttons[_code] == 1 );
 }
+
+// =====
+// Axises
+// =====
+
+void InputProcessAxisInput(LapisWindow _window, LapisInputAxisCode _code, PlatformInputData _data)
+{
+  _window->currentInputState.axises[_code] = _data.valueFloat;
+}
+
+float LapisInputGetAxis(LapisWindow _window, LapisInputAxisCode _code)
+{
+  return _window->currentInputState.axises[_code];
+}
+
+float LapisInputGetAxisDelta(LapisWindow _window, LapisInputAxisCode _code)
+{
+  return _window->currentInputState.axises[_code] - _window->previousInputState.axises[_code];
+}
+
