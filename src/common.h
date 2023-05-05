@@ -8,10 +8,6 @@
 // Input
 // =====
 
-void InputProcessButtonInput(
-  LapisWindow _window,
-  LapisInputButtonCode _code,
-  PlatformInputData _data);
-void InputProcessAxisInput(LapisWindow _window, LapisInputAxisCode _code, PlatformInputData _data);
+void InputProcessInput(LapisWindow _window, LapisInputCode _code, PlatformInputData _data);
 
 #endif // !GEM_LAPIS_COMMON_H_PRIVATE

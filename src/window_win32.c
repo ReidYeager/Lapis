@@ -25,14 +25,14 @@ LRESULT CALLBACK ProcessInputMessage(HWND _hwnd, uint32_t _message, WPARAM _wpar
   case WM_KEYDOWN:
   case WM_SYSKEYDOWN:
   {
-    inputData.valueUint = 1;
-    InputProcessButtonInput(activeWindow, LapisPlatformKeycodeMap[_wparam], inputData);
+    inputData.value = 1.0f;
+    InputProcessInput(activeWindow, LapisPlatformKeycodeMap[_wparam], inputData);
   } break;
   case WM_KEYUP:
   case WM_SYSKEYUP:
   {
-    inputData.valueUint = 0;
-    InputProcessButtonInput(activeWindow, LapisPlatformKeycodeMap[_wparam], inputData);
+    inputData.value = 0.0f;
+    InputProcessInput(activeWindow, LapisPlatformKeycodeMap[_wparam], inputData);
   } break;
   case WM_INPUT:
   {
@@ -48,12 +48,12 @@ LRESULT CALLBACK ProcessInputMessage(HWND _hwnd, uint32_t _message, WPARAM _wpar
 
     if (raw->header.dwType == RIM_TYPEMOUSE)
     {
-      inputData.valueFloat = raw->data.mouse.lLastX;
-      InputProcessAxisInput(activeWindow, Lapis_Input_Mouse_Delta_X, inputData);
-      inputData.valueFloat = raw->data.mouse.lLastY;
-      InputProcessAxisInput(activeWindow, Lapis_Input_Mouse_Delta_Y, inputData);
+      inputData.value = raw->data.mouse.lLastX;
+      InputProcessInput(activeWindow, Lapis_Input_Mouse_Delta_X, inputData);
+      inputData.value = raw->data.mouse.lLastY;
+      InputProcessInput(activeWindow, Lapis_Input_Mouse_Delta_Y, inputData);
 
-      LapisInputButtonCode mouseButtonCode = Lapis_Input_Button_Unkown;
+      LapisInputCode mouseButtonCode = Lapis_Input_Unknown;
 
       uint32_t buttons = (uint32_t)raw->data.mouse.ulButtons;
       uint32_t index = 0;
@@ -71,8 +71,8 @@ LRESULT CALLBACK ProcessInputMessage(HWND _hwnd, uint32_t _message, WPARAM _wpar
           default: break;
           }
 
-          inputData.valueUint = (buttons & 1);
-          InputProcessButtonInput(activeWindow, mouseButtonCode, inputData);
+          inputData.value = (buttons & 1);
+          InputProcessInput(activeWindow, mouseButtonCode, inputData);
         }
         buttons = buttons >> 2;
         index++;
@@ -207,9 +207,9 @@ LapisResult LapisWindowProcessOsEvents(LapisWindow _window)
 
   activeWindow->previousInputState = activeWindow->currentInputState;
   LapisMemSet(
-    activeWindow->currentInputState.axises,
+    &activeWindow->currentInputState.values[Lapis_Input_Button_Count + 1],
     0,
-    sizeof(activeWindow->currentInputState.axises));
+    sizeof(float) * (Lapis_Input_Count - Lapis_Input_Button_Count));
 
   MSG message;
   // TODO : Split window message processing into OS and input messages

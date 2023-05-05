@@ -50,9 +50,11 @@ typedef struct LapisCreateWindowInfo
 
 static uint32_t tmpcode = 0;
 
-typedef enum LapisInputButtonCode
+typedef enum LapisInputCode
 {
-  Lapis_Input_Button_Unkown,
+  Lapis_Input_Unknown,
+
+  // Buttons =====
 
   Lapis_Input_Mouse_Button_Left,
   Lapis_Input_Mouse_Button_Right,
@@ -87,6 +89,7 @@ typedef enum LapisInputButtonCode
   Lapis_Input_Key_Y,
   Lapis_Input_Key_Z,
 
+  Lapis_Input_Key_0,
   Lapis_Input_Key_1,
   Lapis_Input_Key_2,
   Lapis_Input_Key_3,
@@ -96,8 +99,8 @@ typedef enum LapisInputButtonCode
   Lapis_Input_Key_7,
   Lapis_Input_Key_8,
   Lapis_Input_Key_9,
-  Lapis_Input_Key_0,
 
+  Lapis_Input_Key_Numpad0,
   Lapis_Input_Key_Numpad1,
   Lapis_Input_Key_Numpad2,
   Lapis_Input_Key_Numpad3,
@@ -107,7 +110,6 @@ typedef enum LapisInputButtonCode
   Lapis_Input_Key_Numpad7,
   Lapis_Input_Key_Numpad8,
   Lapis_Input_Key_Numpad9,
-  Lapis_Input_Key_Numpad0,
   Lapis_Input_Key_Numpad_Muliply,
   Lapis_Input_Key_Numpad_Add,
   Lapis_Input_Key_Numpad_Subtract,
@@ -179,25 +181,21 @@ typedef enum LapisInputButtonCode
   Lapis_Input_Key_Ralt,
   Lapis_Input_Key_Menu,
 
-  Lapis_Input_Button_Count
-} LapisInputButtonCode;
+  Lapis_Input_Button_Count,
 
-typedef enum LapisInputAxisCode
-{
-  Lapis_Input_Axis_Unknown,
+  // Axises =====
 
   Lapis_Input_Mouse_Position_X,
   Lapis_Input_Mouse_Position_Y,
   Lapis_Input_Mouse_Delta_X,
   Lapis_Input_Mouse_Delta_Y,
 
-  Lapis_Input_Axis_Count
-} LapisInputAxisCode;
+  Lapis_Input_Count
+} LapisInputCode;
 
 typedef struct LapisInputState
 {
-  uint8_t buttons[256];
-  float axises[32];
+  float values[Lapis_Input_Count];
 } LapisInputState;
 
 #endif // !GEM_LAPIS_DEFINES_H

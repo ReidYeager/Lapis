@@ -73,13 +73,10 @@ LapisResult LapisWindowVulkanCreateSurface(
 // =====
 // Input
 // =====
-uint8_t LapisInputGetButton(LapisWindow _window, LapisInputButtonCode _code);
-uint8_t LapisInputGetButtonWasPressed(LapisWindow _window, LapisInputButtonCode _code);
-uint8_t LapisInputGetButtonWasReleased(LapisWindow _window, LapisInputButtonCode _code);
-
-float LapisInputGetAxis(LapisWindow _window, LapisInputAxisCode _code);
-float LapisInputGetAxisDelta(LapisWindow _window, LapisInputAxisCode _code);
-
+float LapisInputGetValue(LapisWindow _window, LapisInputCode _code);
+float LapisInputGetValueDelta(LapisWindow _window, LapisInputCode _code);
+uint8_t LapisInputOnPressed(LapisWindow _window, LapisInputCode _code);
+uint8_t LapisInputOnReleased(LapisWindow _window, LapisInputCode _code);
 
 #ifdef __cplusplus
 }
