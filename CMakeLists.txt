@@ -9,8 +9,9 @@ add_library (Lapis STATIC
   "include/lapis_defines.h"
 
   "src/defines.h"
-  "src/common.h"
- "src/input.c")
+  "src/internal.h"
+  "src/input.c"
+)
 
 ## =====
 # Platforms

@@ -48,12 +48,6 @@ typedef struct LapisWindow_T
   WindowPlatformData platform;
 } LapisWindow_T;
 
-typedef struct PlatformInputData
-{
-  uint32_t flags;
-  float value;
-} PlatformInputData;
-
 #ifdef LAPIS_PLATFORM_WIN32
 static const uint8_t LapisPlatformKeycodeMap[256] = {
   Lapis_Input_Unknown, // 0x00

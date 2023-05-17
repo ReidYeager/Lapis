@@ -1,6 +1,6 @@
 
 #include "src/defines.h"
-#include "src/common.h"
+#include "src/internal.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -13,7 +13,7 @@ LapisWindow activeWindow = NULL;
 LRESULT CALLBACK ProcessInputMessage(HWND _hwnd, uint32_t _message, WPARAM _wparam, LPARAM _lparam)
 {
   LRESULT result = 0;
-  PlatformInputData inputData = { 0 };
+  LapisPlatformInputData inputData = { 0 };
 
   switch (_message)
   {
@@ -207,7 +207,7 @@ LapisResult LapisWindowProcessOsEvents(LapisWindow _window)
 
   activeWindow->previousInputState = activeWindow->currentInputState;
   LapisMemSet(
-    &activeWindow->currentInputState.values[Lapis_Input_Button_Count + 1],
+    &activeWindow->currentInputState.values[Lapis_Input_Button_Count],
     0,
     sizeof(float) * (Lapis_Input_Count - Lapis_Input_Button_Count));
 

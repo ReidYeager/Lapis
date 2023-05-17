@@ -182,6 +182,7 @@ typedef enum LapisInputCode
   Lapis_Input_Key_Menu,
 
   Lapis_Input_Button_Count,
+  Lapis_Input_Button_Any = Lapis_Input_Button_Count,
 
   // Axises =====
 
@@ -196,6 +197,7 @@ typedef enum LapisInputCode
 typedef struct LapisInputState
 {
   float values[Lapis_Input_Count];
+  uint8_t anyPressed;
 } LapisInputState;
 
 #endif // !GEM_LAPIS_DEFINES_H
