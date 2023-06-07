@@ -6,6 +6,7 @@
 extern "C" {
 #endif // __cplusplus
 
+//#pragma warning(disable:4090)
 
 #include "include/lapis_defines.h"
 
@@ -32,9 +33,12 @@ void LapisConsolePrintMessage(LapisConsolePrintType _type, const char* _message,
 void* LapisMemAlloc(uint64_t _size);
 void* LapisMemAllocZero(uint64_t _size);
 void* LapisMemRealloc(void* _data, uint64_t _size);
-void LapisMemSet(void* _data, uint32_t _value, uint64_t _size);
-void LapisMemCopy(void* _src, void* _dst, uint64_t _size);
-void LapisMemFree(void* _data);
+void LapisMemSet(const void* _data, uint32_t _value, uint64_t _size);
+void LapisMemCopy(const void* _src, void* _dst, uint64_t _size);
+void LapisMemFree(const void* _data);
+
+#define LapisMemAllocShort(type, count) (type*)LapisMemAlloc(sizeof(type) * count)
+#define LapisMemAllocZeroShort(type, count) (type*)LapisMemAllocZero(sizeof(type) * count)
 
 // =====
 // File system
