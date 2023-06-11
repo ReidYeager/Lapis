@@ -23,14 +23,14 @@ float LapisInputGetValueDelta(LapisWindow _window, LapisInputCode _code)
   return _window->currentInputState.values[_code] - _window->previousInputState.values[_code];
 }
 
-uint8_t LapisInputOnPressed(LapisWindow _window, LapisInputCode _code)
+bool LapisInputOnPressed(LapisWindow _window, LapisInputCode _code)
 {
   return
     ( _window->currentInputState.values[_code] != 0.0f )
     && ( _window->previousInputState.values[_code] == 0.0f );
 }
 
-uint8_t LapisInputOnReleased(LapisWindow _window, LapisInputCode _code)
+bool LapisInputOnReleased(LapisWindow _window, LapisInputCode _code)
 {
   return
     ( _window->currentInputState.values[_code] == 0.0f )

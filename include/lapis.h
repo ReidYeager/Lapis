@@ -10,6 +10,8 @@ extern "C" {
 
 #include "include/lapis_defines.h"
 
+#include <stdbool.h>
+
 // =====
 // Console
 // =====
@@ -39,6 +41,7 @@ void LapisMemFree(const void* _data);
 
 #define LapisMemAllocArray(type, count) (type*)LapisMemAlloc(sizeof(type) * count)
 #define LapisMemAllocZeroArray(type, count) (type*)LapisMemAllocZero(sizeof(type) * count)
+#define LapisMemReallocArray(type, newCount) (type*)LapisMemRealloc(sizeof(type) * newCount)
 
 // =====
 // File system
@@ -56,7 +59,7 @@ void LapisWindowMarkForClosure(LapisWindow _window);
 LapisResult LapisWindowProcessOsEvents(LapisWindow _window);
 uint32_t LapisWindowGetWidth(LapisWindow _window);
 uint32_t LapisWindowGetHeight(LapisWindow _window);
-uint8_t LapisWindowGetShouldClose(LapisWindow _window);
+bool LapisWindowGetShouldClose(LapisWindow _window);
 
 // Vulkan =====
 #if (LAPIS_VULKAN)
@@ -79,8 +82,8 @@ LapisResult LapisWindowVulkanCreateSurface(
 // =====
 float LapisInputGetValue(LapisWindow _window, LapisInputCode _code);
 float LapisInputGetValueDelta(LapisWindow _window, LapisInputCode _code);
-uint8_t LapisInputOnPressed(LapisWindow _window, LapisInputCode _code);
-uint8_t LapisInputOnReleased(LapisWindow _window, LapisInputCode _code);
+bool LapisInputOnPressed(LapisWindow _window, LapisInputCode _code);
+bool LapisInputOnReleased(LapisWindow _window, LapisInputCode _code);
 
 #ifdef __cplusplus
 }

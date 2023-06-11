@@ -237,7 +237,7 @@ uint32_t LapisWindowGetHeight(LapisWindow _window)
   return _window->height;
 }
 
-uint8_t LapisWindowGetShouldClose(LapisWindow _window)
+bool LapisWindowGetShouldClose(LapisWindow _window)
 {
   return _window->shouldClose;
 }

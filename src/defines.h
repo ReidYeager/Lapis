@@ -40,7 +40,7 @@ typedef struct LapisWindow_T
 {
   uint32_t width;
   uint32_t height;
-  uint8_t shouldClose;
+  bool shouldClose;
 
   LapisInputState currentInputState;
   LapisInputState previousInputState;
@@ -49,7 +49,7 @@ typedef struct LapisWindow_T
 } LapisWindow_T;
 
 #ifdef LAPIS_PLATFORM_WIN32
-static const uint8_t LapisPlatformKeycodeMap[256] = {
+static const bool LapisPlatformKeycodeMap[256] = {
   Lapis_Input_Unknown, // 0x00
   Lapis_Input_Mouse_Button_Left,
   Lapis_Input_Mouse_Button_Right,
@@ -308,7 +308,7 @@ static const uint8_t LapisPlatformKeycodeMap[256] = {
   Lapis_Input_Unknown
 };
 #else
-static const uint8_t LapisPlatformKeycodeMap[256] = { 0 };
+static const bool LapisPlatformKeycodeMap[256] = { 0 };
 #endif
 
 #endif // !GEM_LAPIS_DEFINES_H_PRIVATE

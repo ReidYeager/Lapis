@@ -3,6 +3,7 @@
 #define GEM_LAPIS_DEFINES_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 // =====
 // Lapis generic
@@ -197,7 +198,7 @@ typedef enum LapisInputCode
 typedef struct LapisInputState
 {
   float values[Lapis_Input_Count];
-  uint8_t anyPressed;
+  bool anyPressed;
 } LapisInputState;
 
 #endif // !GEM_LAPIS_DEFINES_H
