@@ -41,7 +41,7 @@ void LapisMemFree(const void* _data);
 
 #define LapisMemAllocArray(type, count) (type*)LapisMemAlloc(sizeof(type) * count)
 #define LapisMemAllocZeroArray(type, count) (type*)LapisMemAllocZero(sizeof(type) * count)
-#define LapisMemReallocArray(type, newCount) (type*)LapisMemRealloc(sizeof(type) * newCount)
+#define LapisMemReallocArray(source, type, newCount) (type*)LapisMemRealloc(source, sizeof(type) * newCount)
 
 // =====
 // File system
