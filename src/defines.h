@@ -49,7 +49,7 @@ typedef struct LapisWindow_T
 } LapisWindow_T;
 
 #ifdef LAPIS_PLATFORM_WIN32
-static const bool LapisPlatformKeycodeMap[256] = {
+static const uint16_t LapisPlatformKeycodeMap[256] = {
   Lapis_Input_Unknown, // 0x00
   Lapis_Input_Mouse_Button_Left,
   Lapis_Input_Mouse_Button_Right,

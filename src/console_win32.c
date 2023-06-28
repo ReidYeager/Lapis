@@ -9,10 +9,10 @@ char messageBuffer[MAX_CONSOLE_MESSAGE_LENGTH];
 
 void LapisConsolePrintMessage(LapisConsolePrintType _type, const char* _message, ...)
 {
-  va_list args;
-  va_start(args, _message);
-  vsnprintf(messageBuffer, MAX_CONSOLE_MESSAGE_LENGTH, _message, args);
-  va_end(args);
+  va_list pArguments;
+  va_start(pArguments, _message);
+  vsnprintf(messageBuffer, MAX_CONSOLE_MESSAGE_LENGTH, _message, pArguments);
+  va_end(pArguments);
 
   //                    Debug, Info , Warning, Error , Fatal
   //                    Cyan , White, Yellow , Red   , White-on-Red
