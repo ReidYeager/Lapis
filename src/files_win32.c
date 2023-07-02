@@ -31,6 +31,8 @@ uint64_t LapisFileRead(const char* _file, char** _pData)
     fileSize = readFileSize;
   }
 
+  fclose(f);
+
   *_pData = fileDataBuffer;
   return fileSize;
 }

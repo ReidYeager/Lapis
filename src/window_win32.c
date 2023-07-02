@@ -7,10 +7,10 @@
 #include <windows.h>
 #include <windowsx.h>
 
-char windowClassNameBuffer[64];
-LapisWindow activeWindow = NULL;
+char windowClassNameBuffer_Lapis[64];
+LapisWindow activeWindow_Lapis = NULL;
 
-LRESULT CALLBACK ProcessInputMessage(HWND _hwnd, uint32_t _message, WPARAM _wparam, LPARAM _lparam)
+LRESULT CALLBACK ProcessInputMessageWin32_Lapis(HWND _hwnd, uint32_t _message, WPARAM _wparam, LPARAM _lparam)
 {
   LRESULT result = 0;
   LapisPlatformInputData inputData = { 0 };
@@ -20,19 +20,26 @@ LRESULT CALLBACK ProcessInputMessage(HWND _hwnd, uint32_t _message, WPARAM _wpar
   case WM_CLOSE:
   case WM_QUIT:
   {
-    activeWindow->shouldClose = 1;
+    activeWindow_Lapis->shouldClose = 1;
   } break;
   case WM_KEYDOWN:
   case WM_SYSKEYDOWN:
   {
     inputData.value = 1.0f;
-    InputProcessInput(activeWindow, LapisPlatformKeycodeMap[_wparam], inputData);
+    InputProcessInput(activeWindow_Lapis, LapisPlatformKeycodeMap[_wparam], inputData);
   } break;
   case WM_KEYUP:
   case WM_SYSKEYUP:
   {
     inputData.value = 0.0f;
-    InputProcessInput(activeWindow, LapisPlatformKeycodeMap[_wparam], inputData);
+    InputProcessInput(activeWindow_Lapis, LapisPlatformKeycodeMap[_wparam], inputData);
+  } break;
+  case WM_MOUSEMOVE:
+  {
+    inputData.value = (float)GET_X_LPARAM(_lparam);
+    InputProcessInput(activeWindow_Lapis, Lapis_Input_Axis_Mouse_Position_X, inputData);
+    inputData.value = (float)GET_Y_LPARAM(_lparam);
+    InputProcessInput(activeWindow_Lapis, Lapis_Input_Axis_Mouse_Position_Y, inputData);
   } break;
   case WM_INPUT:
   {
@@ -49,9 +56,9 @@ LRESULT CALLBACK ProcessInputMessage(HWND _hwnd, uint32_t _message, WPARAM _wpar
     if (raw->header.dwType == RIM_TYPEMOUSE)
     {
       inputData.value = raw->data.mouse.lLastX;
-      InputProcessInput(activeWindow, Lapis_Input_Mouse_Delta_X, inputData);
+      InputProcessInput(activeWindow_Lapis, Lapis_Input_Axis_Mouse_Delta_X, inputData);
       inputData.value = raw->data.mouse.lLastY;
-      InputProcessInput(activeWindow, Lapis_Input_Mouse_Delta_Y, inputData);
+      InputProcessInput(activeWindow_Lapis, Lapis_Input_Axis_Mouse_Delta_Y, inputData);
 
       LapisInputCode mouseButtonCode = Lapis_Input_Unknown;
 
@@ -63,16 +70,16 @@ LRESULT CALLBACK ProcessInputMessage(HWND _hwnd, uint32_t _message, WPARAM _wpar
         {
           switch (index)
           {
-          case 0: mouseButtonCode = Lapis_Input_Mouse_Button_Left; break;
-          case 1: mouseButtonCode = Lapis_Input_Mouse_Button_Right; break;
-          case 2: mouseButtonCode = Lapis_Input_Mouse_Button_Middle; break;
-          case 3: mouseButtonCode = Lapis_Input_Mouse_Button_4; break;
-          case 4: mouseButtonCode = Lapis_Input_Mouse_Button_5; break;
+          case 0: mouseButtonCode = Lapis_Input_Button_Mouse_Left; break;
+          case 1: mouseButtonCode = Lapis_Input_Button_Mouse_Right; break;
+          case 2: mouseButtonCode = Lapis_Input_Button_Mouse_Middle; break;
+          case 3: mouseButtonCode = Lapis_Input_Button_Mouse_4; break;
+          case 4: mouseButtonCode = Lapis_Input_Button_Mouse_5; break;
           default: break;
           }
 
           inputData.value = (buttons & 1);
-          InputProcessInput(activeWindow, mouseButtonCode, inputData);
+          InputProcessInput(activeWindow_Lapis, mouseButtonCode, inputData);
         }
         buttons = buttons >> 2;
         index++;
@@ -89,27 +96,27 @@ LRESULT CALLBACK ProcessInputMessage(HWND _hwnd, uint32_t _message, WPARAM _wpar
   return result;
 }
 
-const char* ConstructWindowClassName(LapisWindow_T* _window)
+const char* ConstructWindowClassName_Lapis(LapisWindow_T* _window)
 {
-  sprintf_s(windowClassNameBuffer, 64, "LapisWindowClass_%p", _window);
-  return windowClassNameBuffer;
+  sprintf_s(windowClassNameBuffer_Lapis, 64, "LapisWindowClass_%p", _window);
+  return windowClassNameBuffer_Lapis;
 }
 
-LapisResult RegisterWindow(LapisWindow_T* _window)
+LapisResult RegisterWindow_Lapis(LapisWindow_T* _window)
 {
   _window->platform.hinstance = GetModuleHandleA(0);
 
   WNDCLASSA wc;
   memset(&wc, 0, sizeof(wc));
   wc.style = CS_DBLCLKS;
-  wc.lpfnWndProc = ProcessInputMessage;
+  wc.lpfnWndProc = ProcessInputMessageWin32_Lapis;
   wc.cbClsExtra = 0;
   wc.cbWndExtra = 0;
   wc.hInstance = _window->platform.hinstance;
   wc.hIcon = LoadIcon(_window->platform.hinstance, IDI_APPLICATION);
   wc.hCursor = LoadCursor(NULL, IDC_ARROW);
   wc.hbrBackground = NULL;
-  wc.lpszClassName = ConstructWindowClassName(_window);
+  wc.lpszClassName = ConstructWindowClassName_Lapis(_window);
   wc.lpszMenuName = NULL;
 
   int x = RegisterClassA(&wc);
@@ -123,7 +130,7 @@ LapisResult RegisterWindow(LapisWindow_T* _window)
   return Lapis_Success;
 }
 
-LapisResult RegisterInputs(LapisWindow_T* _window)
+LapisResult RegisterInputs_Lapis(LapisWindow_T* _window)
 {
 #ifndef HID_USAGE_PAGE_GENERIC
 #define HID_USAGE_PAGE_GENERIC ((USHORT) 0x01)
@@ -145,14 +152,14 @@ LapisResult RegisterInputs(LapisWindow_T* _window)
   return Lapis_Success;
 }
 
-LapisResult CreateAndShowWindow(LapisCreateWindowInfo _info, LapisWindow_T* _window)
+LapisResult CreateAndShowWindow_Lapis(LapisCreateWindowInfo _info, LapisWindow_T* _window)
 {
   uint32_t windowStyle = WS_OVERLAPPEDWINDOW; //WS_OVERLAPPED | WS_SYSMENU | WS_CAPTION
   uint32_t windowExStyle = WS_EX_APPWINDOW;
 
   _window->platform.hwnd = CreateWindowExA(
     windowExStyle,
-    ConstructWindowClassName(_window),
+    ConstructWindowClassName_Lapis(_window),
     _info.title,
     windowStyle,
     _info.xPos, // X screen position
@@ -170,7 +177,7 @@ LapisResult CreateAndShowWindow(LapisCreateWindowInfo _info, LapisWindow_T* _win
     return Lapis_Window_Creation_Failed;
   }
 
-  LAPIS_ATTEMPT(RegisterInputs(_window), return Lapis_Window_Creation_Failed);
+  LAPIS_ATTEMPT(RegisterInputs_Lapis(_window), return Lapis_Window_Creation_Failed);
 
   ShowWindow(_window->platform.hwnd, SW_SHOW);
 
@@ -181,8 +188,8 @@ LapisResult LapisCreateWindow(LapisCreateWindowInfo _info, LapisWindow* _outWind
 {
   LapisWindow_T* newWindow = (LapisWindow_T*)LapisMemAllocZero(sizeof(LapisWindow_T));
 
-  LAPIS_ATTEMPT(RegisterWindow(newWindow), return Lapis_Window_Creation_Failed);
-  LAPIS_ATTEMPT(CreateAndShowWindow(_info, newWindow), return Lapis_Window_Creation_Failed);
+  LAPIS_ATTEMPT(RegisterWindow_Lapis(newWindow), return Lapis_Window_Creation_Failed);
+  LAPIS_ATTEMPT(CreateAndShowWindow_Lapis(_info, newWindow), return Lapis_Window_Creation_Failed);
 
   *_outWindow = newWindow;
   return Lapis_Success;
@@ -203,13 +210,13 @@ void LapisWindowMarkForClosure(LapisWindow _window)
 
 LapisResult LapisWindowProcessOsEvents(LapisWindow _window)
 {
-  activeWindow = _window;
+  activeWindow_Lapis = _window;
 
-  activeWindow->previousInputState = activeWindow->currentInputState;
+  activeWindow_Lapis->previousInputState = activeWindow_Lapis->currentInputState;
   LapisMemSet(
-    &activeWindow->currentInputState.values[Lapis_Input_Button_Count],
+    &activeWindow_Lapis->currentInputState.values[Lapis_Input_Axis_Mouse_Delta_X],
     0,
-    sizeof(float) * (Lapis_Input_Count - Lapis_Input_Button_Count));
+    sizeof(float) * (Lapis_Input_Count - Lapis_Input_Axis_Mouse_Delta_X));
 
   MSG message;
   // TODO : Split window message processing into OS and input messages
@@ -223,7 +230,7 @@ LapisResult LapisWindowProcessOsEvents(LapisWindow _window)
     DispatchMessage(&message);
   }
 
-  activeWindow = NULL;
+  activeWindow_Lapis = NULL;
   return Lapis_Success;
 }
 
