@@ -41,6 +41,30 @@ LRESULT CALLBACK ProcessInputMessageWin32_Lapis(HWND _hwnd, uint32_t _message, W
     inputData.value = (float)GET_Y_LPARAM(_lparam);
     InputProcessInput(activeWindow_Lapis, Lapis_Input_Axis_Mouse_Position_Y, inputData);
   } break;
+  case WM_SIZE:
+  {
+    if (!activeWindow_Lapis) break;
+
+    uint32_t width = LOWORD(_lparam);
+    uint32_t height = HIWORD(_lparam);
+
+    if (width || height)
+    {
+      activeWindow_Lapis->minimized = false;
+      activeWindow_Lapis->width = width;
+      activeWindow_Lapis->height = height;
+    }
+    else
+    {
+      activeWindow_Lapis->minimized = true;
+    }
+
+    if (activeWindow_Lapis->fnResizeCallback)
+    {
+      activeWindow_Lapis->fnResizeCallback(activeWindow_Lapis, activeWindow_Lapis->width, activeWindow_Lapis->height);
+    }
+
+  } break;
   case WM_INPUT:
   {
     GET_RAWINPUT_CODE_WPARAM(_wparam);
@@ -180,6 +204,8 @@ LapisResult CreateAndShowWindow_Lapis(LapisCreateWindowInfo _info, LapisWindow_T
   LAPIS_ATTEMPT(RegisterInputs_Lapis(_window), return Lapis_Window_Creation_Failed);
 
   ShowWindow(_window->platform.hwnd, SW_SHOW);
+  _window->width = _info.width;
+  _window->height = _info.height;
 
   return Lapis_Success;
 }
@@ -190,6 +216,8 @@ LapisResult LapisCreateWindow(LapisCreateWindowInfo _info, LapisWindow* _outWind
 
   LAPIS_ATTEMPT(RegisterWindow_Lapis(newWindow), return Lapis_Window_Creation_Failed);
   LAPIS_ATTEMPT(CreateAndShowWindow_Lapis(_info, newWindow), return Lapis_Window_Creation_Failed);
+
+  newWindow->fnResizeCallback = _info.fnResizeCallback;
 
   *_outWindow = newWindow;
   return Lapis_Success;
@@ -224,6 +252,7 @@ LapisResult LapisWindowProcessOsEvents(LapisWindow _window)
   // https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-peekmessagea
   // Can handle input messages without needing to use "Translate/Dispatch Message"?
   // https://learn.microsoft.com/en-us/windows/win32/winmsg/using-messages-and-message-queues#examining-a-message-queue
+
   while (PeekMessageA(&message, _window->platform.hwnd, 0, 0, PM_REMOVE))
   {
     TranslateMessage(&message);
@@ -242,6 +271,11 @@ uint32_t LapisWindowGetWidth(LapisWindow _window)
 uint32_t LapisWindowGetHeight(LapisWindow _window)
 {
   return _window->height;
+}
+
+bool LapisWindowGetMinimized(LapisWindow _window)
+{
+  return _window->minimized;
 }
 
 bool LapisWindowGetShouldClose(LapisWindow _window)

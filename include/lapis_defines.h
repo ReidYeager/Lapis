@@ -43,6 +43,7 @@ typedef struct LapisCreateWindowInfo
   uint32_t width;
   uint32_t height;
   const char* title;
+  void(*fnResizeCallback)(LapisWindow _window, uint32_t _newWidth, uint32_t _newHeight);
 } LapisCreateWindowInfo;
 
 // =====

@@ -40,12 +40,14 @@ typedef struct LapisWindow_T
 {
   uint32_t width;
   uint32_t height;
+  bool minimized;
   bool shouldClose;
 
   LapisInputState currentInputState;
   LapisInputState previousInputState;
 
   WindowPlatformData platform;
+  void(*fnResizeCallback)(struct LapisWindow_T* _window, uint32_t _newWidth, uint32_t _newHeight);
 } LapisWindow_T;
 
 #ifdef LAPIS_PLATFORM_WIN32
