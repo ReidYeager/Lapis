@@ -46,6 +46,13 @@ typedef struct LapisWindow_T
   bool focused;
   bool shouldClose;
 
+  struct
+  {
+    int32_t posX, posY;
+    bool visible;
+    // Other state info
+  } cursor;
+
   LapisInputState currentInputState;
   LapisInputState previousInputState;
 

@@ -36,9 +36,14 @@ LRESULT CALLBACK ProcessInputMessageWin32_Lapis(HWND _hwnd, uint32_t _message, W
   } break;
   case WM_MOUSEMOVE:
   {
-    inputData.value = (float)GET_X_LPARAM(_lparam);
+    int32_t posX = GET_X_LPARAM(_lparam);
+    activeWindow_Lapis->cursor.posX = posX;
+    inputData.value = (float)posX;
     InputProcessInput(activeWindow_Lapis, Lapis_Input_Axis_Mouse_Position_X, inputData);
-    inputData.value = (float)GET_Y_LPARAM(_lparam);
+
+    int32_t posY = GET_Y_LPARAM(_lparam);
+    activeWindow_Lapis->cursor.posY = posY;
+    inputData.value = (float)posY;
     InputProcessInput(activeWindow_Lapis, Lapis_Input_Axis_Mouse_Position_Y, inputData);
   } break;
   case WM_SIZE:
@@ -190,7 +195,9 @@ LapisResult RegisterInputs_Lapis(LapisWindow_T* _window)
 
 LapisResult CreateAndShowWindow_Lapis(LapisCreateWindowInfo _info, LapisWindow_T* _window)
 {
-  uint32_t windowStyle = WS_OVERLAPPEDWINDOW; //WS_OVERLAPPED | WS_SYSMENU | WS_CAPTION
+  uint32_t resizability = (WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX) * (_info.fnResizeCallback != NULL);
+
+  uint32_t windowStyle = resizability | WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU;
   uint32_t windowExStyle = WS_EX_APPWINDOW;
 
   // Adjust extents so the canvas matches the input extents
@@ -348,6 +355,16 @@ LapisResult LapisWindowSetExtents(LapisWindow _window, uint32_t _width, uint32_t
   return Lapis_Success;
 }
 
+void LapisWindowCursorGetPosition(LapisWindow _window, int32_t* _outX, int32_t* _outY)
+{
+  *_outX = _window->cursor.posX;
+  *_outY = _window->cursor.posY;
+}
+void LapisWindowCursorGetVisible(LapisWindow _window, bool* _outVisible)
+{
+  *_outVisible = _window->cursor.visible;
+}
+
 LapisResult LapisWindowCursorSetPosition(LapisWindow _window, uint32_t _xPos, uint32_t _yPos)
 {
   if (!_window->focused)
@@ -383,9 +400,8 @@ LapisResult LapisWindowCursorSetVisible(LapisWindow _window, bool _visible)
     return Lapis_Failure;
   }
 
-  LapisLogDebug("Cursor is : %d\n", _visible);
-
   ShowCursor(_visible);
+  _window->cursor.visible = _visible;
 
   return Lapis_Success;
 }

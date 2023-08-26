@@ -72,6 +72,8 @@ void LapisWindowGetExtents(LapisWindow _window, uint32_t* _outX, uint32_t* _outY
 LapisResult LapisWindowSetPosition(LapisWindow _window, uint32_t _xPos, uint32_t _yPos);
 LapisResult LapisWindowSetExtents(LapisWindow _window, uint32_t _width, uint32_t _height);
 
+void LapisWindowCursorGetPosition(LapisWindow _window, int32_t* _outX, int32_t* _outY);
+void LapisWindowCursorGetVisible(LapisWindow _window, bool* _outVisible);
 LapisResult LapisWindowCursorSetPosition(LapisWindow _window, uint32_t _xPos, uint32_t _yPos);
 LapisResult LapisWindowCursorSetVisible(LapisWindow _window, bool _visible);
 
