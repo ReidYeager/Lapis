@@ -111,6 +111,18 @@ LRESULT CALLBACK ProcessInputMessageWin32_Lapis(HWND _hwnd, uint32_t _message, W
     }
 
   } break;
+  case WM_KILLFOCUS:
+  {
+    if (activeWindow_Lapis == NULL) break;
+
+    activeWindow_Lapis->focused = false;
+  } break;
+  case WM_SETFOCUS:
+  {
+    if (activeWindow_Lapis == NULL) break;
+
+    activeWindow_Lapis->focused = true;
+  } break;
   default:
   {
     result = DefWindowProcA(_hwnd, _message, _wparam, _lparam);
@@ -147,7 +159,7 @@ LapisResult RegisterWindow_Lapis(LapisWindow_T* _window)
 
   if (x == 0)
   {
-    LAPIS_LOG(Lapis_Console_Error, "Failed to register window\n");
+    LapisLogError("Failed to register window\n");
     return Lapis_Window_Creation_Failed;
   }
 
@@ -181,6 +193,12 @@ LapisResult CreateAndShowWindow_Lapis(LapisCreateWindowInfo _info, LapisWindow_T
   uint32_t windowStyle = WS_OVERLAPPEDWINDOW; //WS_OVERLAPPED | WS_SYSMENU | WS_CAPTION
   uint32_t windowExStyle = WS_EX_APPWINDOW;
 
+  // Adjust extents so the canvas matches the input extents
+  RECT borderRect = { 0, 0, 0, 0 };
+  AdjustWindowRectEx(&borderRect, windowStyle, 0, windowExStyle);
+  uint32_t adjustedWidth = _info.width + borderRect.right - borderRect.left;
+  uint32_t adjustedHeight = _info.height + borderRect.bottom - borderRect.top;
+
   _window->platform.hwnd = CreateWindowExA(
     windowExStyle,
     ConstructWindowClassName_Lapis(_window),
@@ -188,8 +206,8 @@ LapisResult CreateAndShowWindow_Lapis(LapisCreateWindowInfo _info, LapisWindow_T
     windowStyle,
     _info.xPos, // X screen position
     _info.yPos, // Y screen position
-    _info.width, // Extent X
-    _info.height, // Extent Y
+    adjustedWidth,
+    adjustedHeight,
     0,
     0,
     _window->platform.hinstance,
@@ -197,15 +215,15 @@ LapisResult CreateAndShowWindow_Lapis(LapisCreateWindowInfo _info, LapisWindow_T
 
   if (_window->platform.hwnd == 0)
   {
-    LAPIS_LOG(Lapis_Console_Error, "Failed to create window\n");
+    LapisLogError("Failed to create window\n");
     return Lapis_Window_Creation_Failed;
   }
 
   LAPIS_ATTEMPT(RegisterInputs_Lapis(_window), return Lapis_Window_Creation_Failed);
 
   ShowWindow(_window->platform.hwnd, SW_SHOW);
-  _window->width = _info.width;
-  _window->height = _info.height;
+  _window->width = adjustedWidth;
+  _window->height = adjustedHeight;
 
   return Lapis_Success;
 }
@@ -213,6 +231,11 @@ LapisResult CreateAndShowWindow_Lapis(LapisCreateWindowInfo _info, LapisWindow_T
 LapisResult LapisCreateWindow(LapisCreateWindowInfo _info, LapisWindow* _outWindow)
 {
   LapisWindow_T* newWindow = (LapisWindow_T*)LapisMemAllocZero(sizeof(LapisWindow_T));
+
+  if (activeWindow_Lapis == NULL)
+  {
+    activeWindow_Lapis = newWindow;
+  }
 
   LAPIS_ATTEMPT(RegisterWindow_Lapis(newWindow), return Lapis_Window_Creation_Failed);
   LAPIS_ATTEMPT(CreateAndShowWindow_Lapis(_info, newWindow), return Lapis_Window_Creation_Failed);
@@ -278,11 +301,94 @@ bool LapisWindowGetMinimized(LapisWindow _window)
   return _window->minimized;
 }
 
+bool LapisWindowGetVisible(LapisWindow _window)
+{
+  return !LapisWindowGetMinimized(_window) && LapisWindowGetHeight(_window) > 0 && LapisWindowGetWidth(_window) > 0;
+}
+
 bool LapisWindowGetShouldClose(LapisWindow _window)
 {
   return _window->shouldClose;
 }
 
+void LapisWindowGetPosition(LapisWindow _window, int32_t* _outX, int32_t* _outY)
+{
+  *_outX = _window->posX;
+  *_outY = _window->posY;
+}
+
+void LapisWindowGetExtents(LapisWindow _window, uint32_t* _outWidth, uint32_t* _outHeight)
+{
+  *_outWidth = _window->width;
+  *_outHeight = _window->height;
+}
+
+LapisResult LapisWindowSetPosition(LapisWindow _window, uint32_t _xPos, uint32_t _yPos)
+{
+  if (!SetWindowPos(_window->platform.hwnd, HWND_TOP, _xPos, _yPos, _window->width, _window->height, SWP_NOSIZE))
+  {
+    return Lapis_Failure;
+  }
+
+  _window->posX = _xPos;
+  _window->posY = _yPos;
+
+  return Lapis_Success;
+}
+LapisResult LapisWindowSetExtents(LapisWindow _window, uint32_t _width, uint32_t _height)
+{
+  if (!SetWindowPos(_window->platform.hwnd, HWND_TOP, _window->posX, _window->posY, _width, _height, SWP_NOMOVE))
+  {
+    return Lapis_Failure;
+  }
+
+  _window->width = _width;
+  _window->height = _height;
+
+  return Lapis_Success;
+}
+
+LapisResult LapisWindowCursorSetPosition(LapisWindow _window, uint32_t _xPos, uint32_t _yPos)
+{
+  if (!_window->focused)
+  {
+    return Lapis_Failure;
+  }
+
+  POINT point;
+  point.x = (LONG)_xPos;
+  point.y = (LONG)_yPos;
+
+  RECT canvasRect;
+  GetClientRect(_window->platform.hwnd, &canvasRect);
+  if (point.x >= canvasRect.right)
+  {
+    point.x = canvasRect.right - 1;
+  }
+  if (point.y >= canvasRect.bottom)
+  {
+    point.y = canvasRect.bottom - 1;
+  }
+
+  ClientToScreen(_window->platform.hwnd, &point);
+  SetCursorPos(point.x, point.y);
+
+  return Lapis_Success;
+}
+
+LapisResult LapisWindowCursorSetVisible(LapisWindow _window, bool _visible)
+{
+  if (!_window->focused)
+  {
+    return Lapis_Failure;
+  }
+
+  LapisLogDebug("Cursor is : %d\n", _visible);
+
+  ShowCursor(_visible);
+
+  return Lapis_Success;
+}
 
 // =====
 // Graphics APIs
@@ -334,5 +440,6 @@ LapisResult LapisWindowVulkanCreateSurface(
 
   return Lapis_Success;
 }
+
 
 #endif // LAPIS_VULKAN

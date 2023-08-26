@@ -39,6 +39,10 @@ void LapisMemSet(void* _data, uint32_t _value, uint64_t _size);
 void LapisMemCopy(void* _src, void* _dst, uint64_t _size);
 void LapisMemFree(void* _data);
 
+#define LapisMemAllocSingle(type) (type*)LapisMemAlloc(sizeof(type))
+#define LapisMemAllocZeroSingle(type) (type*)LapisMemAllocZero(sizeof(type))
+#define LapisMemReallocSingle(source, type) (type*)LapisMemRealloc(source, sizeof(type))
+
 #define LapisMemAllocArray(type, count) (type*)LapisMemAlloc(sizeof(type) * count)
 #define LapisMemAllocZeroArray(type, count) (type*)LapisMemAllocZero(sizeof(type) * count)
 #define LapisMemReallocArray(source, type, newCount) (type*)LapisMemRealloc(source, sizeof(type) * newCount)
@@ -59,7 +63,17 @@ void LapisWindowMarkForClosure(LapisWindow _window);
 LapisResult LapisWindowProcessOsEvents(LapisWindow _window);
 uint32_t LapisWindowGetWidth(LapisWindow _window);
 uint32_t LapisWindowGetHeight(LapisWindow _window);
+bool LapisWindowGetMinimized(LapisWindow _window);
+bool LapisWindowGetVisible(LapisWindow _window);
 bool LapisWindowGetShouldClose(LapisWindow _window);
+
+void LapisWindowGetPosition(LapisWindow _window, int32_t* _outX, int32_t* _outY);
+void LapisWindowGetExtents(LapisWindow _window, uint32_t* _outX, uint32_t* _outY);
+LapisResult LapisWindowSetPosition(LapisWindow _window, uint32_t _xPos, uint32_t _yPos);
+LapisResult LapisWindowSetExtents(LapisWindow _window, uint32_t _width, uint32_t _height);
+
+LapisResult LapisWindowCursorSetPosition(LapisWindow _window, uint32_t _xPos, uint32_t _yPos);
+LapisResult LapisWindowCursorSetVisible(LapisWindow _window, bool _visible);
 
 // Vulkan =====
 #if (LAPIS_VULKAN)

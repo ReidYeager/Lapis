@@ -6,16 +6,17 @@
 
 #include <stdint.h>
 
-#define LAPIS_ATTEMPT(fn, failureAction) \
-{                                        \
-  LapisResult attemptResult = (fn);      \
-  if (attemptResult != Lapis_Success)    \
-  {                                      \
-    failureAction;                       \
-  }                                      \
+#define LAPIS_ATTEMPT(fn, ...)                                          \
+{                                                                       \
+  LapisResult lResult = (fn);                                           \
+  if (lResult != Lapis_Success)                                         \
+  {                                                                     \
+    LapisLogError("Function \""#fn"\" failed. Result = %d\n", lResult); \
+    LapisLogError("    %s:%d\n", __FILE__, __LINE__);                   \
+    { __VA_ARGS__; }                                                    \
+    return Lapis_Failure;                                               \
+  }                                                                     \
 }
-
-#define LAPIS_LOG(type, msg, ...) LapisConsolePrintMessage(type, "Lapis :: " msg, __VA_ARGS__)
 
 // =====
 // Window
@@ -38,9 +39,11 @@ typedef struct WindowPlatformData
 
 typedef struct LapisWindow_T
 {
-  uint32_t width;
-  uint32_t height;
+  int32_t posX, posY;
+  uint32_t width, height;
+
   bool minimized;
+  bool focused;
   bool shouldClose;
 
   LapisInputState currentInputState;
