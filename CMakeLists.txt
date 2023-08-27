@@ -64,3 +64,4 @@ if (${Vulkan_FOUND})
 endif()
 
 set_target_properties(Lapis PROPERTIES LINKER_LANGUAGE C)
+target_compile_definitions(Lapis PUBLIC LAPIS_MODE=1)

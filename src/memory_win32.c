@@ -32,6 +32,7 @@ void LapisMemCopy(void* _src, void* _dst, uint64_t _size)
 
 void LapisMemFree(void* _data)
 {
-  free(_data);
+  if (_data != NULL)
+    free(_data);
 }
 
