@@ -59,8 +59,11 @@ target_include_directories (Lapis PUBLIC
 find_package(Vulkan)
 if (${Vulkan_FOUND})
   target_compile_definitions(Lapis PUBLIC LAPIS_VULKAN)
-  target_include_directories (Lapis PUBLIC ${Vulkan_INCLUDE_DIRS})
-  target_link_libraries(Lapis Vulkan::Vulkan)
+  target_include_directories (Lapis PUBLIC ${Vulkan_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR}/../Peridot/include/)
+  target_link_libraries(Lapis Vulkan::Vulkan Peridot)
+else()
+  target_link_libraries(Lapis INTERFACE Peridot)
+  target_include_directories (Lapis INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/../Peridot/include/)
 endif()
 
 set_target_properties(Lapis PROPERTIES LINKER_LANGUAGE C)

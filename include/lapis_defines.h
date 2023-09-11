@@ -5,6 +5,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include <peridot.h>
+
 // =====
 // Lapis generic
 // =====
@@ -17,6 +19,15 @@ typedef enum LapisResult
   Lapis_Window_Component_Failed,
   Lapis_Unknown
 } LapisResult;
+
+typedef struct LapisSystemInfo
+{
+  uint32_t monitorCount;
+  uint32_t mouseButtonCount;
+
+  Vec2 primaryMonitorExtents;
+  Vec2 windowMinExtents;
+} LapisSystemInfo;
 
 // =====
 // Console
@@ -44,6 +55,7 @@ typedef struct LapisCreateWindowInfo
   uint32_t width;
   uint32_t height;
   const char* title;
+  bool resizable;
   void(*fnResizeCallback)(LapisWindow _window, uint32_t _newWidth, uint32_t _newHeight);
 } LapisCreateWindowInfo;
 

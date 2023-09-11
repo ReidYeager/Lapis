@@ -48,6 +48,12 @@ void LapisMemFree(void* _data);
 #define LapisMemReallocArray(source, type, newCount) (type*)LapisMemRealloc(source, sizeof(type) * newCount)
 
 // =====
+// System
+// =====
+
+void LapisGetSystemInfo(LapisSystemInfo* _pInfo);
+
+// =====
 // File system
 // =====
 
@@ -63,6 +69,7 @@ void LapisWindowMarkForClosure(LapisWindow _window);
 LapisResult LapisWindowProcessOsEvents(LapisWindow _window);
 uint32_t LapisWindowGetWidth(LapisWindow _window);
 uint32_t LapisWindowGetHeight(LapisWindow _window);
+bool LapisWindowGetResized(LapisWindow _window);
 bool LapisWindowGetMinimized(LapisWindow _window);
 bool LapisWindowGetVisible(LapisWindow _window);
 bool LapisWindowGetShouldClose(LapisWindow _window);

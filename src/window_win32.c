@@ -10,6 +10,19 @@
 char windowClassNameBuffer_Lapis[64];
 LapisWindow activeWindow_Lapis = NULL;
 
+void LapisGetSystemInfo(LapisSystemInfo* _pInfo)
+{
+  // https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getsystemmetrics
+  _pInfo->monitorCount = GetSystemMetrics(SM_CMONITORS);
+  _pInfo->mouseButtonCount = GetSystemMetrics(SM_CMOUSEBUTTONS);
+
+  _pInfo->primaryMonitorExtents.width = GetSystemMetrics(SM_CXSCREEN);
+  _pInfo->primaryMonitorExtents.height = GetSystemMetrics(SM_CYSCREEN);
+
+  _pInfo->windowMinExtents.width = GetSystemMetrics(SM_CXMIN);
+  _pInfo->windowMinExtents.height = GetSystemMetrics(SM_CYMIN);
+}
+
 LRESULT CALLBACK ProcessInputMessageWin32_Lapis(HWND _hwnd, uint32_t _message, WPARAM _wparam, LPARAM _lparam)
 {
   LRESULT result = 0;
@@ -50,6 +63,8 @@ LRESULT CALLBACK ProcessInputMessageWin32_Lapis(HWND _hwnd, uint32_t _message, W
   {
     if (!activeWindow_Lapis) break;
 
+    activeWindow_Lapis->resized = true;
+
     uint32_t width = LOWORD(_lparam);
     uint32_t height = HIWORD(_lparam);
 
@@ -68,7 +83,6 @@ LRESULT CALLBACK ProcessInputMessageWin32_Lapis(HWND _hwnd, uint32_t _message, W
     {
       activeWindow_Lapis->fnResizeCallback(activeWindow_Lapis, activeWindow_Lapis->width, activeWindow_Lapis->height);
     }
-
   } break;
   case WM_INPUT:
   {
@@ -195,7 +209,7 @@ LapisResult RegisterInputs_Lapis(LapisWindow_T* _window)
 
 LapisResult CreateAndShowWindow_Lapis(LapisCreateWindowInfo _info, LapisWindow_T* _window)
 {
-  uint32_t resizability = (WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX) * (_info.fnResizeCallback != NULL);
+  uint32_t resizability = (WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX) * _info.resizable;
 
   uint32_t windowStyle = resizability | WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU;
   uint32_t windowExStyle = WS_EX_APPWINDOW;
@@ -229,8 +243,10 @@ LapisResult CreateAndShowWindow_Lapis(LapisCreateWindowInfo _info, LapisWindow_T
   LAPIS_ATTEMPT(RegisterInputs_Lapis(_window), return Lapis_Window_Creation_Failed);
 
   ShowWindow(_window->platform.hwnd, SW_SHOW);
-  _window->width = adjustedWidth;
-  _window->height = adjustedHeight;
+  _window->width = _info.width;
+  _window->height = _info.height;
+  _window->platform.windowStyle = windowStyle;
+  _window->platform.windowExStyle = windowExStyle;
 
   return Lapis_Success;
 }
@@ -269,6 +285,7 @@ void LapisWindowMarkForClosure(LapisWindow _window)
 LapisResult LapisWindowProcessOsEvents(LapisWindow _window)
 {
   activeWindow_Lapis = _window;
+  activeWindow_Lapis->resized = false;
 
   activeWindow_Lapis->previousInputState = activeWindow_Lapis->currentInputState;
   LapisMemSet(
@@ -301,6 +318,11 @@ uint32_t LapisWindowGetWidth(LapisWindow _window)
 uint32_t LapisWindowGetHeight(LapisWindow _window)
 {
   return _window->height;
+}
+
+bool LapisWindowGetResized(LapisWindow _window)
+{
+  return _window->resized;
 }
 
 bool LapisWindowGetMinimized(LapisWindow _window)
@@ -342,15 +364,35 @@ LapisResult LapisWindowSetPosition(LapisWindow _window, uint32_t _xPos, uint32_t
 
   return Lapis_Success;
 }
+
 LapisResult LapisWindowSetExtents(LapisWindow _window, uint32_t _width, uint32_t _height)
 {
-  if (!SetWindowPos(_window->platform.hwnd, HWND_TOP, _window->posX, _window->posY, _width, _height, SWP_NOMOVE))
+  LapisSystemInfo platformInfo = { 0 };
+  LapisGetSystemInfo(&platformInfo);
+  _width  = max(_width, platformInfo.windowMinExtents.width);
+  _height = max(_height, platformInfo.windowMinExtents.height);
+
+  // Adjust extents so the canvas matches the input extents
+  RECT borderRect = { 0, 0, 0, 0};
+  AdjustWindowRectEx(&borderRect, _window->platform.windowStyle, 0, _window->platform.windowExStyle);
+  uint32_t adjustedWidth = _width + borderRect.right - borderRect.left;
+  uint32_t adjustedHeight = _height + borderRect.bottom - borderRect.top;
+
+  if (!SetWindowPos(
+    _window->platform.hwnd,
+    HWND_TOP,
+    _window->posX,
+    _window->posY,
+    adjustedWidth,
+    adjustedHeight,
+    SWP_NOMOVE))
   {
     return Lapis_Failure;
   }
 
   _window->width = _width;
   _window->height = _height;
+  _window->resized = true;
 
   return Lapis_Success;
 }

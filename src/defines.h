@@ -29,6 +29,9 @@ typedef struct WindowPlatformData
 {
   HWND hwnd;
   HINSTANCE hinstance;
+
+  uint32_t windowStyle;
+  uint32_t windowExStyle;
 } WindowPlatformData;
 #else
 typedef struct WindowPlatformData
@@ -42,6 +45,7 @@ typedef struct LapisWindow_T
   int32_t posX, posY;
   uint32_t width, height;
 
+  bool resized;
   bool minimized;
   bool focused;
   bool shouldClose;
