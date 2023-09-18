@@ -217,16 +217,16 @@ LapisResult CreateAndShowWindow_Lapis(LapisCreateWindowInfo _info, LapisWindow_T
   // Adjust extents so the canvas matches the input extents
   RECT borderRect = { 0, 0, 0, 0 };
   AdjustWindowRectEx(&borderRect, windowStyle, 0, windowExStyle);
-  uint32_t adjustedWidth = _info.width + borderRect.right - borderRect.left;
-  uint32_t adjustedHeight = _info.height + borderRect.bottom - borderRect.top;
+  uint32_t adjustedWidth = _info.extents.width + borderRect.right - borderRect.left;
+  uint32_t adjustedHeight = _info.extents.height + borderRect.bottom - borderRect.top;
 
   _window->platform.hwnd = CreateWindowExA(
     windowExStyle,
     ConstructWindowClassName_Lapis(_window),
     _info.title,
     windowStyle,
-    _info.xPos, // X screen position
-    _info.yPos, // Y screen position
+    _info.position.x, // X screen position
+    _info.position.y, // Y screen position
     adjustedWidth,
     adjustedHeight,
     0,
@@ -243,8 +243,8 @@ LapisResult CreateAndShowWindow_Lapis(LapisCreateWindowInfo _info, LapisWindow_T
   LAPIS_ATTEMPT(RegisterInputs_Lapis(_window), return Lapis_Window_Creation_Failed);
 
   ShowWindow(_window->platform.hwnd, SW_SHOW);
-  _window->width = _info.width;
-  _window->height = _info.height;
+  _window->width = _info.extents.width;
+  _window->height = _info.extents.height;
   _window->platform.windowStyle = windowStyle;
   _window->platform.windowExStyle = windowExStyle;
 

@@ -50,10 +50,8 @@ typedef struct LapisWindow_T* LapisWindow;
 
 typedef struct LapisCreateWindowInfo
 {
-  int32_t xPos;
-  int32_t yPos;
-  uint32_t width;
-  uint32_t height;
+  Vec2I position;
+  Vec2U extents;
   const char* title;
   bool resizable;
   void(*fnResizeCallback)(LapisWindow _window, uint32_t _newWidth, uint32_t _newHeight);
