@@ -207,7 +207,7 @@ LapisResult RegisterInputs_Lapis(LapisWindow_T* _window)
   return Lapis_Success;
 }
 
-LapisResult CreateAndShowWindow_Lapis(LapisCreateWindowInfo _info, LapisWindow_T* _window)
+LapisResult CreateAndShowWindow_Lapis(LapisWindowInitInfo _info, LapisWindow_T* _window)
 {
   uint32_t resizability = (WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX) * _info.resizable;
 
@@ -251,7 +251,7 @@ LapisResult CreateAndShowWindow_Lapis(LapisCreateWindowInfo _info, LapisWindow_T
   return Lapis_Success;
 }
 
-LapisResult LapisCreateWindow(LapisCreateWindowInfo _info, LapisWindow* _outWindow)
+LapisResult LapisWindowInit(LapisWindowInitInfo _info, LapisWindow* _outWindow)
 {
   LapisWindow_T* newWindow = (LapisWindow_T*)LapisMemAllocZero(sizeof(LapisWindow_T));
 
@@ -269,7 +269,7 @@ LapisResult LapisCreateWindow(LapisCreateWindowInfo _info, LapisWindow* _outWind
   return Lapis_Success;
 }
 
-void LapisDestroyWindow(LapisWindow* _window)
+void LapisWindowShutdown(LapisWindow* _window)
 {
   LapisWindow_T* window = *_window;
   DestroyWindow(window->platform.hwnd);
