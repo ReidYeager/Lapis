@@ -142,13 +142,9 @@ LRESULT CALLBACK ProcessInputMessageWin32_Lapis(HWND _hwnd, uint32_t _message, W
 
     activeWindow_Lapis->focused = true;
   } break;
-  default:
-  {
-    result = DefWindowProcA(_hwnd, _message, _wparam, _lparam);
-  } break;
   }
 
-  return result;
+  return DefWindowProcA(_hwnd, _message, _wparam, _lparam);
 }
 
 const char* ConstructWindowClassName_Lapis(LapisWindow_T* _window)
@@ -282,7 +278,7 @@ void LapisWindowMarkForClosure(LapisWindow _window)
   _window->shouldClose = 1;
 }
 
-LapisResult LapisWindowProcessOsEvents(LapisWindow _window)
+LapisResult LapisWindowUpdate(LapisWindow _window)
 {
   activeWindow_Lapis = _window;
   activeWindow_Lapis->resized = false;

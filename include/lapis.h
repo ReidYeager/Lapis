@@ -66,7 +66,7 @@ uint64_t LapisFileRead(const char* _file, char** _pData);
 LapisResult LapisWindowInit(LapisWindowInitInfo _info, LapisWindow* _outWindow);
 void LapisWindowShutdown(LapisWindow* _window);
 void LapisWindowMarkForClosure(LapisWindow _window);
-LapisResult LapisWindowProcessOsEvents(LapisWindow _window);
+LapisResult LapisWindowUpdate(LapisWindow _window);
 uint32_t LapisWindowGetWidth(LapisWindow _window);
 uint32_t LapisWindowGetHeight(LapisWindow _window);
 bool LapisWindowGetResized(LapisWindow _window);
