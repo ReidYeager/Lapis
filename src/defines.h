@@ -22,24 +22,6 @@
 // Window
 // =====
 
-#ifdef LAPIS_PLATFORM_WIN32
-#include <windows.h>
-#include <windowsx.h>
-typedef struct WindowPlatformData
-{
-  HWND hwnd;
-  HINSTANCE hinstance;
-
-  uint32_t windowStyle;
-  uint32_t windowExStyle;
-} WindowPlatformData;
-#else
-typedef struct WindowPlatformData
-{
-  int x;
-} WindowPlatformData;
-#endif // LAPIS_PLATFORM_XXX
-
 typedef struct LapisWindow_T
 {
   int32_t posX, posY;
@@ -60,8 +42,9 @@ typedef struct LapisWindow_T
   LapisInputState currentInputState;
   LapisInputState previousInputState;
 
-  WindowPlatformData platform;
+  LapisWindowPlatformData platform;
   void(*fnResizeCallback)(struct LapisWindow_T* _window, uint32_t _newWidth, uint32_t _newHeight);
+  PlatformInputCallbackFunction fnPlatformInputCallback;
 } LapisWindow_T;
 
 #ifdef LAPIS_PLATFORM_WIN32

@@ -28,13 +28,20 @@ LRESULT CALLBACK ProcessInputMessageWin32_Lapis(HWND _hwnd, uint32_t _message, W
   LRESULT result = 0;
   LapisPlatformInputData inputData = { 0 };
 
+  if (activeWindow_Lapis && activeWindow_Lapis->fnPlatformInputCallback != NULL)
+  {
+    activeWindow_Lapis->fnPlatformInputCallback(_hwnd, _message, _wparam, _lparam);
+  }
+
   switch (_message)
   {
   case WM_CLOSE:
   case WM_QUIT:
   {
     activeWindow_Lapis->shouldClose = 1;
-  } break;
+    PostQuitMessage(0);
+    return 0;
+  }
   case WM_KEYDOWN:
   case WM_SYSKEYDOWN:
   {
@@ -260,6 +267,7 @@ LapisResult LapisWindowInit(LapisWindowInitInfo _info, LapisWindow* _outWindow)
   LAPIS_ATTEMPT(CreateAndShowWindow_Lapis(_info, newWindow), return Lapis_Window_Creation_Failed);
 
   newWindow->fnResizeCallback = _info.fnResizeCallback;
+  newWindow->fnPlatformInputCallback = _info.fnPlatformInputCallback;
 
   *_outWindow = newWindow;
   return Lapis_Success;
@@ -334,6 +342,11 @@ bool LapisWindowGetVisible(LapisWindow _window)
 bool LapisWindowGetShouldClose(LapisWindow _window)
 {
   return _window->shouldClose;
+}
+
+LapisWindowPlatformData LapisWindowGetPlatformData(LapisWindow window)
+{
+  return window->platform;
 }
 
 void LapisWindowGetPosition(LapisWindow _window, int32_t* _outX, int32_t* _outY)

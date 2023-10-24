@@ -7,6 +7,15 @@
 
 #include <peridot.h>
 
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__)
+#define LAPIS_PLATFORM_WIN32 1
+#ifndef _WIN64
+#error "Must have 64-bit windows"
+#endif
+#else
+#error "Unsupported platform"
+#endif // LAPIS_PLATFORM_*
+
 // =====
 // Lapis generic
 // =====
@@ -48,6 +57,31 @@ typedef enum LapisConsolePrintType
 
 typedef struct LapisWindow_T* LapisWindow;
 
+#ifdef LAPIS_PLATFORM_WIN32
+#include <windows.h>
+#include <windowsx.h>
+typedef struct LapisWindowPlatformData
+{
+  HWND hwnd;
+  HINSTANCE hinstance;
+
+  uint32_t windowStyle;
+  uint32_t windowExStyle;
+} LapisWindowPlatformData;
+#else
+typedef struct LapisWindowPlatformData
+{
+  int none;
+} LapisWindowPlatformData;
+#endif // LAPIS_PLATFORM_*
+
+#ifdef LAPIS_PLATFORM_WIN32
+#include <Windows.h>
+typedef void(*PlatformInputCallbackFunction)(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
+#else
+typedef void(*PlatformInputCallbackFunction)();
+#endif // LAPIS_PLATFORM_*
+
 typedef struct LapisWindowInitInfo
 {
   Vec2I position;
@@ -55,6 +89,7 @@ typedef struct LapisWindowInitInfo
   const char* title;
   bool resizable;
   void(*fnResizeCallback)(LapisWindow _window, uint32_t _newWidth, uint32_t _newHeight);
+  PlatformInputCallbackFunction fnPlatformInputCallback;
 } LapisWindowInitInfo;
 
 // =====

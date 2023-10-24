@@ -73,6 +73,7 @@ bool LapisWindowGetResized(LapisWindow _window);
 bool LapisWindowGetMinimized(LapisWindow _window);
 bool LapisWindowGetVisible(LapisWindow _window);
 bool LapisWindowGetShouldClose(LapisWindow _window);
+LapisWindowPlatformData LapisWindowGetPlatformData(LapisWindow window);
 
 void LapisWindowGetPosition(LapisWindow _window, int32_t* _outX, int32_t* _outY);
 void LapisWindowGetExtents(LapisWindow _window, uint32_t* _outX, uint32_t* _outY);
