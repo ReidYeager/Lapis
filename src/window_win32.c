@@ -66,6 +66,12 @@ LRESULT CALLBACK ProcessInputMessageWin32_Lapis(HWND _hwnd, uint32_t _message, W
     inputData.value = (float)posY;
     InputProcessInput(activeWindow_Lapis, Lapis_Input_Axis_Mouse_Position_Y, inputData);
   } break;
+  case WM_MOUSEWHEEL:
+  {
+    int32_t amount = GET_WHEEL_DELTA_WPARAM(_wparam);
+    inputData.value = (float)amount / 120.0f;
+    InputProcessInput(activeWindow_Lapis, Lapis_Input_Axis_Mouse_Wheel, inputData);
+  } break;
   case WM_SIZE:
   {
     if (!activeWindow_Lapis) break;
@@ -135,7 +141,6 @@ LRESULT CALLBACK ProcessInputMessageWin32_Lapis(HWND _hwnd, uint32_t _message, W
         index++;
       }
     }
-
   } break;
   case WM_KILLFOCUS:
   {

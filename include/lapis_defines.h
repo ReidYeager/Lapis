@@ -236,6 +236,7 @@ typedef enum LapisInputCode
   Lapis_Input_Axis_Mouse_Position_Y,
   Lapis_Input_Axis_Mouse_Delta_X,
   Lapis_Input_Axis_Mouse_Delta_Y,
+  Lapis_Input_Axis_Mouse_Wheel,
 
   Lapis_Input_Count
 } LapisInputCode;
