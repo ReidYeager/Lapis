@@ -28,6 +28,9 @@ LRESULT CALLBACK ProcessInputMessageWin32_Lapis(HWND _hwnd, uint32_t _message, W
   LRESULT result = 0;
   LapisPlatformInputData inputData = { 0 };
 
+  if (!activeWindow_Lapis)
+    return 0;
+
   if (activeWindow_Lapis && activeWindow_Lapis->fnPlatformInputCallback != NULL)
   {
     activeWindow_Lapis->fnPlatformInputCallback(_hwnd, _message, _wparam, _lparam);
