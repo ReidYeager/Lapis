@@ -1,70 +1,27 @@
 
 cmake_minimum_required (VERSION 3.20)
 
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_C_STANDARD 17)
+set(CMAKE_C_STANDARD_REQUIRED ON)
 
-add_library (Lapis STATIC
-  "include/lapis.h"
-  "include/lapis_defines.h"
+file(GLOB_RECURSE HeaderFiles CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/**.h")
+file(GLOB_RECURSE CSourceFiles CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/**.c")
 
-  "src/defines.h"
-  "src/internal.h"
-  "src/input.c"
+add_library (lapis STATIC
+  ${HeaderFiles}
+  ${CSourceFiles}
 )
 
-## =====
-# Platforms
-## =====
-
-if (NOT LAPIS_TARGET_PLATFORM)
-  if (WIN32)
-    set(LAPIS_TARGET_PLATFORM "WIN32")
-  else()
-    message(FATAL_ERROR "Must compile on windows")
-  endif()
-endif()
-
-# Win32
-## =====
-if (LAPIS_TARGET_PLATFORM STREQUAL "WIN32")
-  target_sources (Lapis PRIVATE
-    "src/window_win32.c"
-    "src/memory_win32.c"
-    "src/console_win32.c"
-    "src/files_win32.c"
-  )
-
-  target_compile_definitions(Lapis PUBLIC LAPIS_PLATFORM_WIN32)
-endif()
-
-# Linux desktop
-## =====
-if (LAPIS_TARGET_PLATFORM STREQUAL "LINUX_DESKTOP")
-  target_sources (Lapis PRIVATE
-    "src/window_linux.c"
-  )
-
-  target_compile_definitions(Lapis PUBLIC LAPIS_PLATFORM_LINUX_DT)
-endif()
-
-target_include_directories (Lapis PUBLIC
-  ./
+target_include_directories (lapis PUBLIC
+  ./src/
+  ./include/
 )
 
-## =====
-# Graphics Apis
-## =====
+set_target_properties(lapis PROPERTIES LINKER_LANGUAGE C)
+target_compile_definitions(lapis PUBLIC GEM_LAPIS=1)
 
-find_package(Vulkan)
-if (${Vulkan_FOUND})
-  target_compile_definitions(Lapis PUBLIC LAPIS_VULKAN)
-  target_include_directories (Lapis PUBLIC ${Vulkan_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR}/../Peridot/include/)
-  target_link_libraries(Lapis Vulkan::Vulkan Peridot)
+if (WIN32)
+  target_compile_definitions(lapis PUBLIC "LAPIS_PLATFORM_WIN32")
 else()
-  target_link_libraries(Lapis INTERFACE Peridot)
-  target_include_directories (Lapis INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/../Peridot/include/)
+  message(FATAL_ERROR "Only windows compilation supported")
 endif()
-
-set_target_properties(Lapis PROPERTIES LINKER_LANGUAGE C)
-target_compile_definitions(Lapis PUBLIC LAPIS_MODE=1)
