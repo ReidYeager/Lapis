@@ -9,4 +9,18 @@ enum LapisResult
   Lapis_Failure_Platform
 };
 
+namespace Lapis
+{
+
+enum MessageType
+{
+  Message_Info,
+  Message_Debug,
+  Message_Warning,
+  Message_Error,
+  Message_Fatal
+};
+
+} // namespace Lapis
+
 #endif // !LAPIS_DEFINES_H

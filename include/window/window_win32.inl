@@ -6,10 +6,11 @@ private:
   char*              m_title        = nullptr;
   bool               m_minimized    = false;
   bool               m_shouldClose  = true;
+  bool               m_isValid      = false;
   WindowPlatformInfo m_platformInfo = {};
 
-  //Input              m_input;
-  std::function<void(Event&)> m_eventCallbackFunction;
+  std::function<void(Event&)> m_eventCallbackFunction = nullptr;
+  std::optional<std::function<void(HWND, uint32_t, WPARAM, LPARAM)>> m_platformPollInjection = nullptr;
 
 public:
   LapisResult Init(const WindowInitInfo* initInfo);
@@ -21,7 +22,8 @@ public:
   inline const char*        Title()          const { return m_title; }
   inline WindowPlatformInfo PlatformInfo()   const { return m_platformInfo; }
   inline bool               Minimized()      const { return m_minimized; }
-  inline bool               ShouldClose()    const { return m_shouldClose; }
+  inline bool               ShouldClose()    const { return m_shouldClose || !m_isValid; }
+  inline bool               IsValid()        const { return m_isValid; }  
   inline void               MarkForClosure()       { m_shouldClose = true; }
 
   // Win32 specific

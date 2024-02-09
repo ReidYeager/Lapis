@@ -1,7 +1,7 @@
 #ifndef LAPIS_WINDOW_H
 #define LAPIS_WINDOW_H
 
-#include "include/lapis_defines.h"
+#include "include/lapis_common.h"
 #include "include/events/event.h"
 
 #ifdef LAPIS_PLATFORM_WIN32
@@ -14,6 +14,7 @@
 #endif // LAPIS_PLATFORM_*
 
 #include <functional>
+#include <optional>
 
 namespace Lapis
 {
@@ -31,7 +32,15 @@ struct WindowInitInfo
   } position;
 
   const char* title;
-  std::function<void(Event&)> eventCallbackFunction = NULL;
+  std::function<void(Event&)> eventCallbackFunction;
+
+#ifdef LAPIS_PLATFORM_WIN32
+  // Optional callback for accessing raw platform event polling
+  std::optional<std::function<void(HWND, uint32_t, WPARAM, LPARAM)>> platformPollInjection;
+#else
+  // Optional callback for accessing raw platform event polling
+  std::optional<std::function<void()>> platformPollInjection;
+#endif // LAPIS_PLATFORM_*
 };
 
 #ifdef LAPIS_PLATFORM_WIN32

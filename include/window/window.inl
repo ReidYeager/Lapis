@@ -6,14 +6,15 @@ private:
   char*              m_title        = nullptr;
   bool               m_minimized    = false;
   bool               m_shouldClose  = true;
+  bool               m_isValid      = false;
   WindowPlatformInfo m_platformInfo = {};
 
-  //Input              m_input;
-  std::function<void(Event&)> m_eventCallbackFunction;
+  std::function<void(Event&)> m_eventCallbackFunction = nullptr;
+  std::optional<std::function<void()>> m_platformPollInjection = nullptr;
 
 public:
-  SandboxResult Init(WindowInitInfo initInfo);
-  SandboxResult PollEvents();
+  LapisResult Init(const WindowInitInfo* initInfo);
+  LapisResult PollEvents();
   void         Shutdown();
 
   inline uint32_t           Width()          const { return m_width; }
@@ -22,5 +23,6 @@ public:
   inline WindowPlatformInfo PlatformInfo()   const { return m_platformInfo; }
   inline bool               Minimized()      const { return m_minimized; }
   inline bool               ShouldClose()    const { return m_shouldClose; }
+  inline bool               IsValid()        const { return m_isValid; }
   inline void               MarkForClosure()       { m_shouldClose = true; }
 };

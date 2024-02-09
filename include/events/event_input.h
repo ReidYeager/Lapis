@@ -1,7 +1,7 @@
 #ifndef LAPIS_EVENT_INPUT_H
 #define LAPIS_EVENT_INPUT_H
 
-#include "include/lapis_defines.h"
+#include "include/lapis_common.h"
 #include "include/events/event.h"
 #include "include/events/buttons.h"
 

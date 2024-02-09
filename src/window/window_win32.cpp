@@ -1,7 +1,7 @@
 
 #ifdef LAPIS_PLATFORM_WIN32
 
-#include "src/defines.h"
+#include "src/common.h"
 #include "include/window/window.h"
 
 #include <string>
@@ -28,6 +28,12 @@ LRESULT CALLBACK Win32InputCallback(HWND hwnd, uint32_t message, WPARAM wparam, 
 
 LapisResult Window::Init(const WindowInitInfo* initInfo)
 {
+  if (m_isValid)
+  {
+    LAPIS_ERROR("Attempting to initialize a valid window");
+    return Lapis_Success;
+  }
+
   if (initInfo->eventCallbackFunction == NULL)
   {
     return Lapis_Failure_Invalid_Input;
@@ -52,11 +58,12 @@ LapisResult Window::Init(const WindowInitInfo* initInfo)
   ShowWindow(m_platformInfo.hwnd, SW_SHOW);
 
   // Set basic information
-  m_eventCallbackFunction = initInfo->eventCallbackFunction;
   m_width = initInfo->extents.width;
   m_height = initInfo->extents.height;
   m_title = nullptr;
   m_shouldClose = false;
+  m_eventCallbackFunction = initInfo->eventCallbackFunction;
+  m_platformPollInjection = initInfo->platformPollInjection;
 
   uint32_t titleLength = strlen(initInfo->title) + 1;
   while (m_title == nullptr)
@@ -65,6 +72,7 @@ LapisResult Window::Init(const WindowInitInfo* initInfo)
   }
   memcpy(m_title, initInfo->title, titleLength);
 
+  m_isValid = true;
   return Lapis_Success;
 }
 
@@ -89,6 +97,7 @@ LapisResult Window::Register()
 
   if (result == 0)
   {
+    LAPIS_ERROR("Failed to register the window");
     return Lapis_Failure_Platform;
   }
   return Lapis_Success;
@@ -123,6 +132,7 @@ LapisResult Window::CreatePlatformWindow(const WindowInitInfo* initInfo)
 
   if (m_platformInfo.hwnd == 0)
   {
+    LAPIS_ERROR("Failed to create the window");
     return Lapis_Failure_Platform;
   }
 
@@ -145,6 +155,7 @@ LapisResult Window::RegisterInput()
   inputDevice.hwndTarget = m_platformInfo.hwnd;
   if (!RegisterRawInputDevices(&inputDevice, 1, sizeof(inputDevice)))
   {
+    LAPIS_ERROR("Failed to register raw input");
     return Lapis_Failure_Platform;
   }
 
@@ -156,6 +167,12 @@ LapisResult Window::RegisterInput()
 
 LapisResult Window::PollEvents()
 {
+  if (!m_isValid)
+  {
+    LAPIS_ERROR("Attempting to poll an invalid window");
+    return Lapis_Failure;
+  }
+
   MSG message;
   uint32_t allowance = 100; // Limit number of messages allowed to process per call
 
@@ -177,6 +194,11 @@ LRESULT CALLBACK Win32InputCallback(HWND hwnd, uint32_t message, WPARAM wparam, 
 {
   if (g_pollingWindow == nullptr)
     return DefWindowProcA(hwnd, message, wparam, lparam);
+
+  if (g_pollingWindow->m_platformPollInjection.has_value())
+  {
+    g_pollingWindow->m_platformPollInjection.value()(hwnd, message, wparam, lparam);
+  }
 
   switch (message)
   {

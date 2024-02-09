@@ -1,7 +1,7 @@
 #ifndef LAPIS_EVENT_H
 #define LAPIS_EVENT_H
 
-#include "include/lapis_defines.h"
+#include "include/lapis_common.h"
 
 #include <string>
 
