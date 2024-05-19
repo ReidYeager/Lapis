@@ -1,16 +1,39 @@
-#ifndef LAPIS_H
-#define LAPIS_H
 
-#include "include/lapis_common.h"
-#include "include/window/window.h"
+#if !defined(LAPIS_H)
+#define LAPIS_H 1
 
-namespace Lapis
-{
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
-// Default nullptr
-// Set to handle logging in the user application
-extern void(*MessageOutput)(MessageType type, const char* message);
+#include "./lapis_defines.h"
 
-} // namespace Lapis
+// ============================================================
+// Window
+// ============================================================
 
-#endif // !LAPIS_H
+LapisResult LapisWindowInit(LapisWindow* pWindow, LapisWindowInitInfo* const initInfo);
+void LapisWindowShutdown(LapisWindow* pWindow);
+LapisResult LapisWindowPollEvents(LapisWindow* pWindow); // Defined per-platform directly
+
+//void LapisWindowSetExtents(u32 newWidth, u32 newHeight);
+//void LapisWindowSetPosition(i32 newX, i32 newY);
+//void LapisWindowSetTitle(const char* newTitle);
+
+// ============================================================
+// Input
+// ============================================================
+
+bool LapisInputButtonGetState(LapisWindow* pWindow, LapisButtonCode button);
+bool LapisInputButtonPressed(LapisWindow* pWindow, LapisButtonCode button);
+bool LapisInputButtonReleased(LapisWindow* pWindow, LapisButtonCode button);
+
+void LapisInputMouseGetPosition(LapisWindow* pWindow, i16* outX, i16* outY);
+void LapisInputMouseGetDelta(LapisWindow* pWindow, i16* outX, i16* outY);
+void LapisInputMouseGetWheel(LapisWindow* pWindow, i16* outX, i16* outY);
+
+#if defined(__cplusplus)
+} // extern "C"
+#endif
+
+#endif // !defined(LAPIS_H)

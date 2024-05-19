@@ -1,20 +1,21 @@
-#ifndef LAPIS_DEFINES_H_
-#define LAPIS_DEFINES_H_
 
-#include "include/lapis_common.h"
+#if !defined(LAPIS_COMMON_H)
+#define LAPIS_COMMON_H 1
 
-#include <stdint.h>
+#include "lapis.h"
 
-namespace Lapis
-{
-void OutputMessage(MessageType type, const char* message, ...);
-} // namespace Lapis
+bool WindowPlatformInit_Lapis(LapisWindow* pWindow, LapisWindowInitInfo* const initInfo);
+void WindowPlatformShutdown_Lapis(LapisWindow* pWindow);
 
-#define LAPIS_INFO(...) OutputMessage(Message_Info, __VA_ARGS__)
-#define LAPIS_DEBUG(...) OutputMessage(Message_Debug, __VA_ARGS__)
-#define LAPIS_WARNING(...) OutputMessage(Message_Warning, __VA_ARGS__)
-#define LAPIS_ERROR(...) OutputMessage(Message_Error, __VA_ARGS__)
-#define LAPIS_FATAL(...) OutputMessage(Message_Fatal, __VA_ARGS__)
+void EventCallbackNull_Lapis(LapisEventType type, void* data);
 
+void InputUpdateState_Lapis(LapisWindow* pWindow);
+void InputHandleButtonPress_Lapis(LapisWindow* pWindow, LapisButtonCode button);
+void InputHandleButtonRelease_Lapis(LapisWindow* pWindow, LapisButtonCode button);
+void InputHandleMouseMove_Lapis(LapisWindow* pWindow, i16 posX, i16 posY);
+void InputHandleMouseScrollX_Lapis(LapisWindow* pWindow, i16 amount);
+void InputHandleMouseScrollY_Lapis(LapisWindow* pWindow, i16 amount);
+void InputHandleMousePress_Lapis(LapisWindow* pWindow, u8 mouseButtonIndex);
+void InputHandleMouseRelease_Lapis(LapisWindow* pWindow, u8 mouseButtonIndex);
 
-#endif // !LAPIS_DEFINES_H_
+#endif // !LAPIS_COMMON_H
