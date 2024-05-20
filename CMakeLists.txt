@@ -14,7 +14,7 @@ add_library (lapis STATIC
 
 target_include_directories (lapis PUBLIC
   ./src/
-  ./include/
+  ./include/Lapis/
 )
 
 set_target_properties(lapis PROPERTIES LINKER_LANGUAGE C)

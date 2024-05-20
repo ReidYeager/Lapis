@@ -1,6 +1,6 @@
 
 #if !defined(GEM_BASE_H)
-#define GEM_BASE_H
+#define GEM_BASE_H 1
 
 // Overritable macros
 // ============================================================
