@@ -1,10 +1,7 @@
 
 #include "common.h"
 
-void EventCallbackNull_Lapis(LapisEventType type, void* data)
-{
-  
-}
+void EventCallbackNull_Lapis(LapisEventType type, void* data) { }
 
 bool LapisInputButtonGetState(LapisWindow* pWindow, LapisButtonCode button)
 {
@@ -63,6 +60,16 @@ void InputHandleButtonPress_Lapis(LapisWindow* pWindow, LapisButtonCode button)
   pWindow->pEventCallbackFn(Lapis_Event_Input_Button_Press, &e);
 }
 
+void InputHandleButtonRepeat_Lapis(LapisWindow* pWindow, LapisButtonCode button)
+{
+  u8 index = button >> 6; // button/64
+  u64 bit = 1ll << (button & 63); // 1 << (button % 64)
+  pWindow->input.curState.buttons[index] |= bit;
+
+  LapisEventInputButtonRepeat e = { button };
+  pWindow->pEventCallbackFn(Lapis_Event_Input_Button_Repeat, &e);
+}
+
 void InputHandleButtonRelease_Lapis(LapisWindow* pWindow, LapisButtonCode button)
 {
   u8 index = button >> 6; // button/64
@@ -84,7 +91,7 @@ void InputHandleMouseMove_Lapis(LapisWindow* pWindow, i16 posX, i16 posY)
 
 void InputHandleMouseScrollX_Lapis(LapisWindow* pWindow, i16 amount)
 {
-  pWindow->input.curState.mouseScroll[0] = amount;
+  pWindow->input.curState.mouseScroll[0] += amount;
 
   LapisEventInputMouseScroll e = { amount, 0 };
   pWindow->pEventCallbackFn(Lapis_Event_Input_Mouse_Scroll, &e);
@@ -92,7 +99,7 @@ void InputHandleMouseScrollX_Lapis(LapisWindow* pWindow, i16 amount)
 
 void InputHandleMouseScrollY_Lapis(LapisWindow* pWindow, i16 amount)
 {
-  pWindow->input.curState.mouseScroll[1] = amount;
+  pWindow->input.curState.mouseScroll[1] += amount;
 
   LapisEventInputMouseScroll e = { 0, amount };
   pWindow->pEventCallbackFn(Lapis_Event_Input_Mouse_Scroll, &e);

@@ -17,7 +17,7 @@ static bool RegisterWindow(LapisWindow* pWindow, bool useClientCallback)
 
   WNDCLASSA wc;
   memset(&wc, 0, sizeof(wc));
-  wc.style = CS_DBLCLKS;
+  wc.style = CS_DBLCLKS | CS_OWNDC;
   wc.lpfnWndProc = (useClientCallback) ? Win32InputCallbackWithClientCallback : Win32InputCallback;
   wc.cbClsExtra = 0;
   wc.cbWndExtra = 0;
@@ -43,7 +43,7 @@ static bool CreateWindow(LapisWindow* pWindow, LapisWindowInitInfo* const initIn
 {
   u32 resizability = WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX;
   u32 windowStyle = resizability | WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU;
-  u32 windowExStyle = WS_EX_APPWINDOW;
+  u32 windowExStyle = WS_EX_APPWINDOW | WS_EX_WINDOWEDGE;
 
   RECT borderRect = { 0, 0, 0, 0 };
   AdjustWindowRectEx(&borderRect, windowStyle, 0, windowExStyle);
@@ -132,9 +132,19 @@ LapisResult LapisWindowPollEvents(LapisWindow* pWindow)
     DispatchMessage(&message);
   }
 
+  // Re-enable mouse hover tracking
+  TRACKMOUSEEVENT mouseEvent;
+  mouseEvent.cbSize = sizeof(TRACKMOUSEEVENT);
+  mouseEvent.dwFlags = TME_HOVER | TME_LEAVE | TME_CANCEL;
+  mouseEvent.hwndTrack = pWindow->platformInfo.hwnd;
+  mouseEvent.dwHoverTime = 16; // milliseconds
+  TrackMouseEvent(&mouseEvent);
+
   g_pollingWindow = NULL;
   return Lapis_Success;
 }
+
+#include <stdio.h>
 
 static LRESULT CALLBACK Win32InputCallbackWithClientCallback(HWND hwnd, u32 message, WPARAM wparam, LPARAM lparam)
 {
@@ -168,6 +178,8 @@ static LRESULT CALLBACK Win32PollEvent(LapisWindow* pWindow, HWND hwnd, u32 mess
 
   case WM_CLOSE:
   {
+    LapisEventWindowClose e = { true };
+    pWindow->pEventCallbackFn(Lapis_Event_Window_Close, &e);
     g_pollingWindow->shouldClose = true;
   } return 0;
 
@@ -199,9 +211,16 @@ static LRESULT CALLBACK Win32PollEvent(LapisWindow* pWindow, HWND hwnd, u32 mess
   case WM_KILLFOCUS:
   case WM_SETFOCUS:
   {
-    LapisEventWindowFocusChange e = { message == WM_SETFOCUS };
-    pWindow->pEventCallbackFn(Lapis_Event_Window_Focus_Change, &e);
+    LapisEventWindowFocusKey e = { message == WM_SETFOCUS };
+    pWindow->pEventCallbackFn(Lapis_Event_Window_Focus_Key, &e);
   } return 0;
+
+  //case WM_MOUSELEAVE:
+  //case WM_MOUSEHOVER:
+  //{
+  //  LapisEventWindowFocusKey e = { message == WM_MOUSEHOVER };
+  //  pWindow->pEventCallbackFn(Lapis_Event_Window_Focus_Mouse, &e);
+  //} return 0;
 
   case WM_MOVE:
   {
@@ -232,7 +251,14 @@ static LRESULT CALLBACK Win32PollEvent(LapisWindow* pWindow, HWND hwnd, u32 mess
     default: break;
     }
 
-    InputHandleButtonPress_Lapis(pWindow, PlatformKeyToInputCode[keycode]);
+    if (lparam & 0x40000000)
+    {
+      InputHandleButtonRepeat_Lapis(pWindow, PlatformKeyToInputCode[keycode]);
+    }
+    else
+    {
+      InputHandleButtonPress_Lapis(pWindow, PlatformKeyToInputCode[keycode]);
+    }
   } return 0;
 
   case WM_KEYUP:
@@ -312,14 +338,9 @@ static LRESULT CALLBACK Win32PollEvent(LapisWindow* pWindow, HWND hwnd, u32 mess
     }
     InputHandleMouseRelease_Lapis(pWindow, button);
   } return 0;
-
-  default:
-  {
-    return DefWindowProcA(hwnd, message, wparam, lparam);
-  }
   }
 
-  return 0;
+  return DefWindowProcA(hwnd, message, wparam, lparam);
 }
 
 

@@ -44,22 +44,24 @@ typedef enum LapisResult
 
 typedef enum LapisEventType
 {
-  Lapis_Event_Window               = 0x0000000f,
+  Lapis_Event_Window               = 0x000000ff,
   Lapis_Event_Window_Move          = 0x00000001,
   Lapis_Event_Window_Resize        = 0x00000002,
   Lapis_Event_Window_Minimize      = 0x00000004,
-  Lapis_Event_Window_Focus_Change  = 0x00000008,
-  //Lapis_Event_Window_Close ??
+  Lapis_Event_Window_Close         = 0x00000008,
+  Lapis_Event_Window_Focus_Mouse   = 0x00000010,
+  Lapis_Event_Window_Focus_Key     = 0x00000020,
 
-  Lapis_Event_Input                = 0x00000ff0,
-  Lapis_Event_Input_Button         = 0x000000f0,
-  Lapis_Event_Input_Button_Press   = 0x00000010,
-  Lapis_Event_Input_Button_Release = 0x00000020,
-  Lapis_Event_Input_Mouse          = 0x00000f00,
-  Lapis_Event_Input_Mouse_Move     = 0x00000100,
-  Lapis_Event_Input_Mouse_Press    = 0x00000200,
-  Lapis_Event_Input_Mouse_Release  = 0x00000400,
-  Lapis_Event_Input_Mouse_Scroll   = 0x00000800,
+  Lapis_Event_Input                = 0x0000ff00,
+  Lapis_Event_Input_Button         = 0x00000f00,
+  Lapis_Event_Input_Button_Press   = 0x00000100,
+  Lapis_Event_Input_Button_Release = 0x00000200,
+  Lapis_Event_Input_Button_Repeat  = 0x00000400,
+  Lapis_Event_Input_Mouse          = 0x0000f000,
+  Lapis_Event_Input_Mouse_Move     = 0x00001000,
+  Lapis_Event_Input_Mouse_Press    = 0x00002000,
+  Lapis_Event_Input_Mouse_Release  = 0x00004000,
+  Lapis_Event_Input_Mouse_Scroll   = 0x00008000,
 } LapisEventType;
 
 typedef void(*LapisEventCallbackFn)(LapisEventType, void*);
@@ -81,10 +83,20 @@ typedef struct LapisEventWindowMinimize
   bool isNowMinimized;
 } LapisEventWindowMinimize;
 
-typedef struct LapisEventWindowFocusChange
+typedef struct LapisEventWindowClose
+{
+  bool isNowClosed;
+} LapisEventWindowClose;
+
+typedef struct LapisEventWindowFocusMouse
 {
   bool isNowFocused;
-} LapisEventWindowFocusChange;
+} LapisEventWindowFocusMouse;
+
+typedef struct LapisEventWindowFocusKey
+{
+  bool isNowFocused;
+} LapisEventWindowFocusKey;
 
 typedef struct LapisEventInputButtonPress
 {
@@ -95,6 +107,11 @@ typedef struct LapisEventInputButtonRelease
 {
   LapisButtonCode button;
 } LapisEventInputButtonRelease;
+
+typedef struct LapisEventInputButtonRepeat
+{
+  LapisButtonCode button;
+} LapisEventInputButtonRepeat;
 
 typedef struct LapisEventInputMouseMove
 {
